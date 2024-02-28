@@ -1,0 +1,42 @@
+name: React Native iOS Build
+run-name: ${{ github.actor }} is building iOS build using GitHub Actions 🚀
+on:
+  push:
+    branches:
+      - development
+jobs:
+  # run-test-cases:
+  #   runs-on: macos-latest
+  #   steps:
+  #     - name: Setup iOS Release
+  #       uses: actions/checkout@v3
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version-file: '.node-version'
+  #         cache: 'yarn'
+  #     - name: Run test cases
+  #       uses: actions/checkout@v3
+  #     - run: yarn install && yarn test
+  # needs: run-test-cases
+
+  release-ios:
+    runs-on: macos-latest
+    name: Build and release iOS app
+    steps:
+      - name: Build iOS Release
+        uses: actions/checkout@v3
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+      - run: bun install && bun run test
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Install Fastlane
+        run: cd ios && bundle install && cd ..
+      - name: Install packages
+        run: yarn install
+      - name: Install pods
+        run: cd ios && pod install && cd ..
+      - name: Execute Fastlane command
+        run: cd ios && fastlane beta

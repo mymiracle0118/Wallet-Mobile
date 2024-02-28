@@ -1,0 +1,9 @@
+{
+  "frontendFramework": "react",
+  "ignoredDirectories": ["node_modules"],
+  "ignoredFiles": ["src/App.tsx", "src/theme/navigationHelper.ts"],
+  "includeFailingTests": true,
+  "testSuffix": "test",
+  "testingFramework": "jest",
+  "testingLanguageOverride": "typescript"
+}
