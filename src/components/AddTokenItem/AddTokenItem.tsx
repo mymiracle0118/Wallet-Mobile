@@ -11,51 +11,56 @@ import { style } from './style';
 
 type Props = {
   item: any;
-  selectedId: any;
+  selected: boolean;
   onSelect: (id: string) => void;
 };
 
 const AddTokenItem = (props: Props) => {
   const { Layout, Gutters, Fonts, Colors } = useTheme();
 
-  const { item, selectedId, onSelect } = props;
+  const { item, selected, onSelect } = props;
 
   return (
     <View style={[style(Gutters, Layout).container]}>
-      <Image
-        style={style(Gutters, Layout).icon}
-        resizeMode="contain"
-        source={item?.image}
-      />
+      {item?.image ? (
+        <Image
+          style={style(Gutters, Layout).icon}
+          resizeMode="contain"
+          source={item?.image}
+        />
+      ) : (
+        <View style={style(Gutters, Layout, Colors).textImage}>
+          <Text style={[Fonts.titleSmall, { color: Colors.blackGray }]}>
+            {`${item?.title?.split(' ')[0][0]}`}
+          </Text>
+        </View>
+      )}
+
       <View style={style(Gutters, Layout).subView}>
         <View style={[Layout.fill]}>
           <View style={Layout.row}>
             <Text style={[Fonts.titleSmall]} numberOfLines={1}>
               {item?.title}
             </Text>
-            <VerticalSeparatorView spacing={Variables.MetricsSizes.tiny} />
-            <Text
-              numberOfLines={1}
-              style={{ ...Fonts.titleSmall, color: Colors.grayText }}
-            >
-              {item?.networkName}
-            </Text>
+            {item?.tokenType === 'ERC20' && (
+              <>
+                <VerticalSeparatorView spacing={Variables.MetricsSizes.tiny} />
+                <Text
+                  numberOfLines={1}
+                  style={{ ...Fonts.titleSmall, color: Colors.grayText }}
+                >
+                  {item?.networkName}
+                </Text>
+              </>
+            )}
           </View>
           <Text style={[Fonts.textTinyGrayLightRegular]}>{item?.subTitle}</Text>
         </View>
-        {/* <View style={[Layout.alignItemsEnd]}>
-          <Text style={[Fonts.titleSmall]}>
-            {getRoundDecimalValue(item?.amount) ?? '0'}
-          </Text>
-          <Text style={[Fonts.textTinyGrayLightRegular]}>
-            {USDollar().format(item?.amount * item?.usdAmount)}
-          </Text>
-        </View> */}
       </View>
       <View style={style(Gutters, Layout).checkBox}>
         <BouncyCheckbox
           testID="bouncy-checkbox"
-          isChecked={selectedId === item.id}
+          isChecked={selected}
           disableBuiltInState
           iconImageStyle={{ tintColor: Colors.blackGray }}
           fillColor={Colors.textPurple}

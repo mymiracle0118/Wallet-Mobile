@@ -28,16 +28,9 @@ type Props = {
 };
 
 const QrCodeView = forwardRef((props: Props, ref) => {
-  const { Layout, Colors, Gutters, Images } = useTheme();
+  const { Colors, Gutters, Images } = useTheme();
 
   const { value, size } = props;
-  // Expose a method to the parent component using useImperativeHandle
-  //   useImperativeHandle(ref, () => ({
-  //     // Define the method here
-  //     methodName: () => {
-  //       // Method implementation
-  //     },
-  //   }));
   return (
     <ViewShot
       ref={ref}
@@ -48,7 +41,7 @@ const QrCodeView = forwardRef((props: Props, ref) => {
         result: 'tmpfile',
       }}
     >
-      <View testID={'qr-code'} style={style(Gutters, Layout, Colors).container}>
+      <View testID={'qr-code'} style={style(Gutters, Colors).container}>
         <QRCode
           size={size}
           value={value}

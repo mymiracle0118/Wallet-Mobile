@@ -1,7 +1,12 @@
 import { gutters, layout } from 'theme';
 import getStyleSheet from 'theme/Helper/currentStyleSheet';
+import Variables from 'theme/Variables';
 
-export const style = (Gutters: typeof gutters, Layout: typeof layout) => {
+export const style = (
+  Gutters: typeof gutters,
+  Layout: typeof layout,
+  Colors?: typeof Variables.Colors,
+) => {
   return getStyleSheet().create({
     container: {
       ...Gutters.extraTinyVMargin,
@@ -21,6 +26,13 @@ export const style = (Gutters: typeof gutters, Layout: typeof layout) => {
     },
     checkBox: {
       ...Gutters.tinyMediumLMargin,
+    },
+    textImage: {
+      width: 30,
+      height: 30,
+      backgroundColor: Colors?.white,
+      ...Layout.center,
+      borderRadius: 15,
     },
   });
 };

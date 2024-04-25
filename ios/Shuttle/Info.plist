@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Shuttle</string>
+	<string>Star Key</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleGetInfoString</key>
@@ -55,12 +55,12 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Please provide camera access. This allows you to take pictures for your profile.</string>
+	<string>Please provide photo library access. This allows you to add photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to photo library so that photos can be selected</string>
+	<string>We need access to photo library so that photos can be selected.</string>
 	<key>NSUbiquitousContainers</key>
 	<dict>
-		<key>iCloud.com.webclues.shuttle</key>
+		<key>iCloud.com.codezeroes.shuttle</key>
 		<dict>
 			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
 			<true/>

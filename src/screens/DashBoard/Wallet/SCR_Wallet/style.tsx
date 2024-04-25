@@ -33,7 +33,8 @@ export const style = (
       ...Layout.bottom0,
       ...Gutters.tinyVPadding,
       ...Gutters.smallBMargin,
-      ...BorderRadius.LargeBorderRadius,
+      borderWidth: 0,
+      backgroundColor: Colors.primary,
     },
     bottomBorderButton: {
       ...Layout.absolute,
@@ -42,11 +43,14 @@ export const style = (
       ...Gutters.smallBMargin,
       ...BorderRadius.LargeBorderRadius,
       backgroundColor: applyOpacityToHexColor(Colors.bottomButtonBG, 0.3),
+      borderWidth: 0,
     },
     viewAmount: {
       ...Layout.alignItemsCenter,
       ...Layout.fill,
       ...Gutters.smallTMargin,
     },
+    btnTextWithWhiteColor: { color: Colors.white },
+    btnTextWithPurpleColor: { color: Colors.textPurple },
   });
 };

@@ -5,7 +5,11 @@ import { t } from 'i18next';
 import mockData from 'theme/mockData';
 import { SortingItem } from 'types/applicationInterfaces';
 
-import { DropDownView, SortByFilterBottomSheetView } from '..';
+import {
+  DropDownView,
+  GestureHandlerHoc,
+  SortByFilterBottomSheetView,
+} from '..';
 import { style } from './styles';
 
 interface Props extends TextInputProps {
@@ -45,24 +49,27 @@ const NetworkListDropDownView = (props: Props) => {
       />
 
       <Modal visible={openChooseNetwork} transparent={true}>
-        <SortByFilterBottomSheetView
-          multiSelect={false}
-          title={t('onBoarding:select_network')}
-          onDonePress={item => {
-            setOpenChooseNetwork(false);
-            onSelectedNetwork && onSelectedNetwork(item[0]);
-          }}
-          onClearPress={() => {
-            onSelectedNetwork && onSelectedNetwork({});
-          }}
-          isSheetOpen={openChooseNetwork}
-          items={networkList}
-          onClose={() => {
-            setOpenChooseNetwork(false);
-          }}
-          selectedItemsId={selectedNetwork?.id ? [selectedNetwork.id] : []}
-          customImageStyle={style().icon}
-        />
+        <GestureHandlerHoc>
+          <SortByFilterBottomSheetView
+            multiSelect={false}
+            title={t('onBoarding:select_network')}
+            onDonePress={item => {
+              setOpenChooseNetwork(false);
+              onSelectedNetwork && onSelectedNetwork(item[0]);
+            }}
+            onClearPress={() => {
+              onSelectedNetwork && onSelectedNetwork({});
+            }}
+            isSheetOpen={openChooseNetwork}
+            items={networkList}
+            onClose={() => {
+              setOpenChooseNetwork(false);
+            }}
+            selectedItemsId={selectedNetwork?.id ? [selectedNetwork.id] : []}
+            customImageStyle={style().icon}
+            enablePanDownToClose={true}
+          />
+        </GestureHandlerHoc>
       </Modal>
     </View>
   );

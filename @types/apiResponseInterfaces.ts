@@ -1,4 +1,3 @@
-import { ApolloError, NetworkStatus } from '@apollo/client';
 import { TransactionRequest } from 'ethers';
 
 export type EnvironmentType = 'testNet' | 'mainNet';
@@ -64,13 +63,6 @@ export interface ActivityItemInterface {
   id: string;
   transactionObj: TransactionRequest;
 }
-export interface Result<T> {
-  data: T | undefined;
-  networkStatus: NetworkStatus;
-  loading: boolean;
-  error: ApolloError | undefined;
-  callApi: () => void;
-}
 
 export interface UserNameResponse {
   usernameExists: boolean;
@@ -79,10 +71,10 @@ export interface UserNameResponse {
 export interface UserResponse {
   userName: string;
   userId: string;
-  derivationPathIndex: string;
   privateKey?: string;
   isWalletFromSeedPhase: boolean;
   profileIcon?: string | string[];
+  isPrimary: boolean;
 }
 
 export interface CreateUserResponse {
@@ -157,3 +149,8 @@ export interface FlattenedSolanaCustomTokens {
     pubkey: string;
   };
 }
+
+export type WalletAddressInfo = {
+  derivationIndex: string;
+  address: string;
+};

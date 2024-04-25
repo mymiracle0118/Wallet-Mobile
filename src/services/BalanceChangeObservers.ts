@@ -215,8 +215,7 @@ const BalanceChangeObservers = () => {
     tokens: ExistingNetworksItem[],
   ) => {
     const supportedNetworkTokens = tokens.filter(
-      item =>
-        item?.networkName === NetWorkType.ETH || item?.networkName === 'Matic',
+      item => item?.networkName === NetWorkType.ETH,
     );
     WalletCommonService().fetchAndStoreERC20TokenBalance(
       supportedNetworkTokens,
@@ -231,10 +230,7 @@ const BalanceChangeObservers = () => {
     tokens: ExistingNetworksItem[],
   ) => {
     const nonSupportedNetworkTokens = tokens.filter(
-      item =>
-        !(
-          item?.networkName === NetWorkType.ETH || item?.networkName === 'Matic'
-        ) && item?.isEVMNetwork,
+      item => !(item?.networkName === NetWorkType.ETH) && item?.isEVMNetwork,
     );
 
     for (const item of nonSupportedNetworkTokens) {
@@ -553,6 +549,8 @@ const BalanceChangeObservers = () => {
     getAndStoreERC20TokenBalance,
     fetchCustomTokenBalance,
     fetchNativeTokenBalance,
+    fetchAndStoreNonSupportedNetworkERC20TokenBalances,
+    dispatchGetAllSolanaTokenBalance,
   };
 };
 

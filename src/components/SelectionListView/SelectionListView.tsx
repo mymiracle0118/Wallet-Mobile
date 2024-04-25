@@ -112,7 +112,6 @@ const SelectionListView: React.FC<Props> = ({
           style(Gutters, Layout, Colors, Fonts).itemLeftImage,
           customImageStyle,
         ]}
-        // resizeMode="center"
       />
       <View style={style(Gutters, Layout, Colors, Fonts).itemText}>
         <Text style={Fonts.textSmallBold}>{t(item.text)}</Text>
@@ -130,7 +129,7 @@ const SelectionListView: React.FC<Props> = ({
   );
 
   return (
-    <View style={style(Gutters, Layout, Colors, Fonts).container}>
+    <View>
       {!shouldHideHeader && (
         <FilterSortingHeader
           isDoneButtonEnabled={isDoneButtonEnabled}

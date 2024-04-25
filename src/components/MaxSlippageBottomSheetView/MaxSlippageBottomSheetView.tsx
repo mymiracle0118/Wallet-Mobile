@@ -200,8 +200,7 @@ const MaxSlippageBottomSheetView = (props: Props): React.JSX.Element => {
                 },
               ]}
               editable={cutsomSlippageActive}
-              onChangeText={text => {
-                console.log('text :: ', text);
+              onChangeText={() => {
                 handleButtonClick('cutsom');
               }}
               keyboardType="decimal-pad"

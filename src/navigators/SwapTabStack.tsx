@@ -1,12 +1,14 @@
 import React from 'react';
 
 import { createStackNavigator } from '@react-navigation/stack';
-import SwapActivity from 'screens/DashBoard/Swap/SCR_SWAP_ACTIVITY';
-import SwapFrom from 'screens/DashBoard/Swap/SCR_SWAP_FROM';
-import SwapReview from 'screens/DashBoard/Swap/SCR_SWAP_REVIEW';
-import SwapTo from 'screens/DashBoard/Swap/SCR_SWAP_TO';
-import SelectNetwork from 'screens/DashBoard/Swap/SCR_Select_Network';
-import { Swap } from 'screens/index';
+import {
+  SelectNetwork,
+  Swap,
+  SwapActivity,
+  SwapFrom,
+  SwapReview,
+  SwapTo,
+} from 'screens/index';
 
 import { ScreenNames } from '../theme';
 

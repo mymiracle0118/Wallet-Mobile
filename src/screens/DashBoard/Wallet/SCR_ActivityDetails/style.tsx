@@ -10,6 +10,5 @@ export const style = (Gutters: typeof gutters) => {
       width: 24,
       height: 24,
     },
-    addressBtn: { ...Gutters.tinyVPadding },
   });
 };

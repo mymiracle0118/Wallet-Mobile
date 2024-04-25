@@ -14,7 +14,7 @@ import { style } from './style';
 type Props = {
   items: any;
   testID: string;
-  handleIsAddEnable: (item: ExistingNetworksItem) => void;
+  handleIsAddEnable: (items: ExistingNetworksItem[]) => void;
 };
 
 const AddTokenListView = (props: Props) => {
@@ -24,7 +24,7 @@ const AddTokenListView = (props: Props) => {
   const [searchText, setSearchText] = useState('');
   const [filterData, setFilterData] = useState([]);
 
-  const [selectedId, setSelectedId] = useState('');
+  const [selectedItems, setSelectedItems] = useState([]);
 
   useUpdateEffect(() => {
     let tokenList = [];
@@ -54,7 +54,12 @@ const AddTokenListView = (props: Props) => {
     if (tokenList.length || searchText?.trim() !== '') {
       setFilterData([
         {
-          title: tokenList.length ? 'wallet:all' : '',
+          title: tokenList.length
+            ? tokenList.length +
+              (tokenList?.length > 1
+                ? t('setting:results')
+                : t('setting:result'))
+            : t('common:no_result_found'),
           data: tokenList,
         },
       ]);
@@ -66,6 +71,20 @@ const AddTokenListView = (props: Props) => {
   const tokenListArray = useMemo(() => {
     return filterData.length ? filterData : items;
   }, [searchText, items, filterData]);
+
+  const selectValue = (item: ExistingNetworksItem) => {
+    let tempList = [...selectedItems];
+    const isExist = selectedItems.includes(item);
+    if (!isExist) {
+      tempList.push(item);
+    } else {
+      tempList = tempList.filter(itemTemp => {
+        return itemTemp.id !== item.id;
+      });
+    }
+    setSelectedItems(tempList);
+    handleIsAddEnable(tempList);
+  };
 
   return (
     <>
@@ -86,26 +105,14 @@ const AddTokenListView = (props: Props) => {
           <Pressable
             testID={testID}
             onPress={() => {
-              if (item.id === selectedId) {
-                setSelectedId('');
-                handleIsAddEnable({});
-              } else {
-                setSelectedId(item.id);
-                handleIsAddEnable(item);
-              }
+              selectValue(item);
             }}
           >
             <AddTokenItem
               item={item}
-              selectedId={selectedId}
+              selected={selectedItems.includes(item) ? true : false}
               onSelect={() => {
-                if (item.id === selectedId) {
-                  setSelectedId('');
-                  handleIsAddEnable({});
-                } else {
-                  setSelectedId(item.id);
-                  handleIsAddEnable(item);
-                }
+                selectValue(item);
               }}
             />
           </Pressable>

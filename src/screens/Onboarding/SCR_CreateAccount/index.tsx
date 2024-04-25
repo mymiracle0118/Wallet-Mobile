@@ -34,11 +34,7 @@ import {
   updateCurrentUserId,
   updateUserName,
 } from 'store/userInfo';
-import {
-  addRemoveTokenFromList,
-  clearSelectedTokensListList,
-} from 'store/wallet';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
+import { addRemoveTokenFromList, clearSelectedTokensList } from 'store/wallet';
 import {
   colorPalette,
   generateRandomString,
@@ -69,8 +65,7 @@ const CreateAccount: React.FC<any> = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [mounted, setMounted] = useState(false);
   const [isChecked, setIsChecked] = useState(
-    redirectFrom === ScreenNames.RecoveryUsingSecretPhrase ||
-      redirectFrom === ScreenNames.CloudRecovery,
+    redirectFrom === ScreenNames.FileRecovery,
   );
 
   const seedPhrase = useSelector((state: RootState) => {
@@ -110,7 +105,7 @@ const CreateAccount: React.FC<any> = () => {
   }, [navigation]);
 
   useUpdateEffect(() => {
-    dispatch(clearSelectedTokensListList());
+    dispatch(clearSelectedTokensList());
   }, [mounted]);
 
   // Asynchronous function to create mnemonic-based accounts and update the wallet state
@@ -251,22 +246,15 @@ const CreateAccount: React.FC<any> = () => {
     }
 
     if (redirectFrom === ScreenNames.Welcome) {
-      navigation.navigate(ScreenNames.RecoveryVideo, {
-        title: t('onBoarding:recoveryVideo_title'),
-        subTitle: t('onBoarding:recoveryVideo_subTitle'),
-        videoUrl:
-          'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-        btnText: t('common:Next'),
-        redirectToNextScreen: redirectToBackUpFirstRecoveryPhraseScreen,
-      });
+      navigation.navigate(ScreenNames.CreateAccountChooseRecoveryMethod);
     } else {
       const user = {
         userName: getValues().userName.trim(),
         userId: userId,
-        derivationPathIndex: '0',
         privateKey: privateKey ? privateKey : undefined,
         isWalletFromSeedPhase: privateKey ? false : true,
         profileIcon: colorPalette[getRandomIndex(colorPalette.length)],
+        isPrimary: true,
       };
       dispatch(updateCreateUser({ data: [user] }));
       dispatch(updateCurrentUser({ data: user }));
@@ -280,14 +268,6 @@ const CreateAccount: React.FC<any> = () => {
         shouldShowAnimation: true,
       });
     }
-  };
-
-  const redirectToBackUpFirstRecoveryPhraseScreen = () => {
-    navigation.navigate(ScreenNames.BackUpFirstRecoveryPhrase, {
-      isFromRevealSecretPhrase: false,
-      redirectFrom: ScreenNames.CreateAccount,
-      userData: {},
-    });
   };
 
   // Handle form submission
@@ -334,7 +314,7 @@ const CreateAccount: React.FC<any> = () => {
           shouldShowCancel={redirectFrom === ScreenNames.Welcome}
           title={
             redirectFrom === ScreenNames.RecoveryUsingSecretPhrase ||
-            redirectFrom === ScreenNames.CloudRecovery
+            redirectFrom === ScreenNames.FileRecovery
               ? t('onBoarding:welcome_back')
               : t('onBoarding:createAccount_title')
           }
@@ -373,37 +353,33 @@ const CreateAccount: React.FC<any> = () => {
           )}
         />
 
-        {redirectFrom !== ScreenNames.RecoveryUsingSecretPhrase &&
-          redirectFrom !== ScreenNames.CloudRecovery && (
-            <>
-              <HorizontalSeparatorView
-                spacing={Variables.MetricsSizes.medium}
-              />
-              <CheckBoxView
-                isChecked={isChecked}
-                setIsChecked={setIsChecked}
-                text={
-                  <Text>
-                    {t('onBoarding:i_agree_to_the') + ' '}
-                    <Text
-                      style={{ color: Colors.textPurple }}
-                      onPress={onPressTermsOfService}
-                    >
-                      {t('onBoarding:terms_of_service')}
-                    </Text>
+        {redirectFrom !== ScreenNames.FileRecovery && (
+          <>
+            <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
+            <CheckBoxView
+              isChecked={isChecked}
+              setIsChecked={setIsChecked}
+              text={
+                <Text>
+                  {t('onBoarding:i_agree_to_the') + ' '}
+                  <Text
+                    style={{ color: Colors.textPurple }}
+                    onPress={onPressTermsOfService}
+                  >
+                    {t('onBoarding:terms_of_service')}
                   </Text>
-                }
-              />
-            </>
-          )}
-        <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
+                </Text>
+              }
+            />
+          </>
+        )}
 
+        <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
         <Button
           text={t('common:Next')}
-          backGroundColor={
-            errors?.userName?.message || !isChecked
-              ? applyOpacityToHexColor(Colors.switchBGColor, 0.3)
-              : Colors.primary
+          colors={
+            (errors?.userName?.message || !isChecked) &&
+            Colors.disableGradientColor
           }
           onPress={handleSubmit(onSubmit)}
           btnTextColor={

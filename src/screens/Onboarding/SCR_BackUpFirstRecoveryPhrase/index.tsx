@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, ScrollView, View } from 'react-native';
 import { openSettings } from 'react-native-permissions';
 import { height } from 'react-native-size-scaling';
 import { useDispatch, useSelector } from 'react-redux';
@@ -28,7 +28,11 @@ import PermissionService from 'services/PermissionService';
 import WalletCommonService from 'services/WalletCommonService';
 import { RootState } from 'store/index';
 import { updateLoader } from 'store/loader';
-import { showAlert, showToast } from 'theme/Helper/common/Function';
+import {
+  generateRandomNumber,
+  showAlert,
+  showToast,
+} from 'theme/Helper/common/Function';
 import { DirectoryPath } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import ScreenNames from 'theme/screenNames';
@@ -52,6 +56,10 @@ export default function BackUpFirstRecoveryPhrase() {
 
   const [privateKeyOrSeedPhrase, setPrivateKeyOrSeedPhrase] = useState('');
 
+  const walletAddress = useSelector((state: RootState) => {
+    return state.wallet?.data?.walletAddress;
+  });
+
   useEffect(() => {
     if (redirectFrom !== ScreenNames.Accounts) {
       setPrivateKeyOrSeedPhrase(seedPhrase);
@@ -74,7 +82,7 @@ export default function BackUpFirstRecoveryPhrase() {
     await nextFrame();
     setPrivateKeyOrSeedPhrase(
       WalletCommonService().getPrivateKeyUsingSeedPhrase(
-        userData?.derivationPathIndex,
+        walletAddress[userData?.userId][userData?.shortName].derivationIndex,
         userData?.shortName,
       ),
     );
@@ -144,7 +152,7 @@ export default function BackUpFirstRecoveryPhrase() {
   return (
     <SafeAreaWrapper applyToOnlyTopEdge={false}>
       <BackgroundView image={Images.background.ic_backgroundLayer} />
-      <View style={style(Gutters, Layout).wrapperView}>
+      <ScrollView style={style(Gutters, Layout).wrapperView} bounces={false}>
         <HeaderWithTitleAndSubTitle
           title={
             isFromRevealSecretPhrase
@@ -279,14 +287,21 @@ export default function BackUpFirstRecoveryPhrase() {
                   navigation.goBack();
                   return;
                 }
-                navigation.navigate(
-                  ScreenNames.CreateAccountChooseRecoveryMethod,
-                );
+                // Generate random numbers
+                const randomNumbers = generateRandomNumber(3);
+                let tempArray = [
+                  { position: randomNumbers[0], value: '' },
+                  { position: randomNumbers[1], value: '' },
+                  { position: randomNumbers[2], value: '' },
+                ];
+                navigation.navigate(ScreenNames.VerifyRecoveryPhrase, {
+                  randomPhrase: tempArray,
+                });
               }}
             />
           </>
         )}
-      </View>
+      </ScrollView>
     </SafeAreaWrapper>
   );
 }

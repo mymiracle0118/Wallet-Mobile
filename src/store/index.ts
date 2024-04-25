@@ -1,16 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
-import {
-  persistStore, // FLUSH,
-  // REHYDRATE,
-  // PAUSE,
-  // PERSIST,
-  // PURGE,
-  // REGISTER,
-  // Storage,
-} from 'redux-persist';
+import { persistStore } from 'redux-persist';
 
-// import mmkvFlipper from 'rn-mmkv-storage-flipper';
 import { api } from '../services/api';
 import { persistedReducer } from './rootReducer';
 

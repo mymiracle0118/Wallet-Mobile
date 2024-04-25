@@ -12,7 +12,6 @@ const plugins = [
         customHooks: './src/customHooks/',
         store: './src/store/',
         algorithms: './src/algorithms/',
-        apollo: './src/apollo/',
         nativeBridge: './src/nativeBridge/',
         stream: 'stream-browserify',
         crypto: 'react-native-quick-crypto',
@@ -32,14 +31,6 @@ if (process.env['BABEL_ENV'] !== 'development') {
 }
 
 module.exports = {
-  presets: [
-    [
-      'module:metro-react-native-babel-preset',
-      {
-        unstable_transformProfile: 'hermes-stable',
-      },
-    ],
-    '@babel/preset-typescript',
-  ],
+  presets: ['module:@react-native/babel-preset'],
   plugins: plugins,
 };

@@ -26,7 +26,7 @@ const CustomToggleSwitch = ({ isEnabled, onPress }: Props) => {
         useAngle
         colors={
           isEnabled
-            ? Colors.primaryGradientColor
+            ? Colors.switchGradientColor
             : [
                 applyOpacityToHexColor(Colors.switchBGColor, 0.3),
                 applyOpacityToHexColor(Colors.switchBGColor, 0.3),

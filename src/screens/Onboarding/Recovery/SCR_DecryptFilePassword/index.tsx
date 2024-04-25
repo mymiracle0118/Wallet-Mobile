@@ -16,7 +16,6 @@ import {
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import KeyChainService from 'services/KeyChainService';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import { MaximumPasswordCharacters } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import { ValidationSchema } from 'theme/index';
@@ -89,11 +88,7 @@ const DecryptFilePassword: React.FC<any> = () => {
               />
               <Button
                 text={t('common:Next')}
-                backGroundColor={
-                  isValid
-                    ? Colors.primary
-                    : applyOpacityToHexColor(Colors.switchBGColor, 0.3)
-                }
+                colors={!isValid && Colors.disableGradientColor}
                 onPress={handleSubmit(onSubmit)}
                 btnTextColor={isValid ? Colors.white : Colors.buttonGrayText}
               />

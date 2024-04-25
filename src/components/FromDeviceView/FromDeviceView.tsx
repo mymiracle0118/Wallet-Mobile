@@ -24,6 +24,7 @@ type Props = {
   shouldShowError?: boolean;
   subTitle?: string;
   cloudRecoveryStatus?: 'success' | 'none';
+  totalNumberOfFiles: number;
 };
 
 const FromDeviceView = ({
@@ -35,6 +36,7 @@ const FromDeviceView = ({
   onPressClose,
   shouldShowUserCloudID,
   cloudRecoveryStatus,
+  totalNumberOfFiles,
 }: Props) => {
   const { Layout, Fonts, Gutters, Colors, Images } = useTheme();
 
@@ -68,7 +70,7 @@ const FromDeviceView = ({
         <>
           <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
           {filePath?.map((item, index) => (
-            <View>
+            <View key={index}>
               <View style={[style(Gutters, Layout, Colors).fileUrlView]}>
                 <FilePath
                   filePath={item?.name}
@@ -95,7 +97,9 @@ const FromDeviceView = ({
       {(shouldShowUserCloudID && cloudRecoveryStatus === 'success') ||
       (filePath?.length &&
         filePath?.filter(item => item.fileStatus === 'success').length ===
-          filePath?.length) ? null : (
+          filePath?.length &&
+        filePath?.filter(item => item.fileStatus === 'success').length ===
+          totalNumberOfFiles) ? null : (
         <>
           <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
           <Button text={buttonName} onPress={onPress} />

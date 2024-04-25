@@ -33,6 +33,7 @@ import {
   GasFeeData,
 } from 'types/applicationInterfaces';
 
+import { aptosErrorMessages } from '../theme/Helper/constant';
 import StoreUpdateReduxWalletStateService from './StoreUpdateReduxWalletStateService';
 import WalletCommonService from './WalletCommonService';
 
@@ -128,14 +129,14 @@ const AptosService = () => {
    */
   const getPrivateKey = async () => {
     // Check if the wallet is from the seed phase
-    const { isWalletFromSeedPhase, derivationPathIndex } =
+    const { isWalletFromSeedPhase } =
       store.getState().userInfo.data.currentUser;
 
     if (isWalletFromSeedPhase) {
       // If the wallet is from the seed phase, retrieve the private key using getWalletUsingSeed
       const account = await getWalletUsingSeed(
         store.getState().wallet.data.seedPhrase,
-        derivationPathIndex,
+        WalletCommonService().getDerivationPathIndex(NetWorkType.APT),
       );
       return account.privateKey;
     } else {
@@ -263,13 +264,26 @@ const AptosService = () => {
 
         WalletCommonService().getBalanceAfterTransaction(tokenObj);
       } else {
-        onTransactionFail(
-          t('onBoarding:something_went_wrong_please_try_again'),
-        );
+        console.error('Error in transactions aptos:', transactions);
+        throw t('onBoarding:something_went_wrong_please_try_again');
       }
     } catch (error) {
       console.error('Error in sendAptos:', error);
-      onTransactionFail(t('onBoarding:something_went_wrong_please_try_again'));
+      try {
+        const errorMessageMatch = JSON.parse(
+          error?.message ?? '{}',
+        )?.message?.match(/Code: (\w+)/);
+
+        const errorMessageCode = errorMessageMatch
+          ? errorMessageMatch[1]
+          : 'Unknown error';
+
+        const errorMessage =
+          aptosErrorMessages[errorMessageCode] || 'Unknown error';
+        onTransactionFail(errorMessage);
+      } catch {
+        onTransactionFail('Unknown error');
+      }
     }
   };
 
@@ -287,7 +301,7 @@ const AptosService = () => {
   const sendCustomToken = async (
     toAddress: string,
     amount: string,
-    _gasPrice: number,
+    gasPrice: number,
     _gasLimit: number,
     onTransactionRequest: (request?: {}) => void,
     onTransactionDone: (transaction: {}) => void,
@@ -303,22 +317,19 @@ const AptosService = () => {
 
       const builder = new TransactionBuilderRemoteABI(client, {
         sender: myAccount.address(),
+        gasUnitPrice: gasPrice ? Symbol(gasPrice).description : undefined,
       });
 
-      const contractInfo = await getTokenInformationFromAddress(
+      const contractInfo = await getCustomTokenInformation(
         tokenObj.tokenContractAddress,
         tokenObj,
       );
 
-      await checkAndRegister(walletAddress, tokenObj, contractInfo);
-
-      let coinType = contractInfo?.type
-        .replace('0x1::coin::CoinInfo<', '')
-        .replace('>', '');
+      await checkAndRegister(walletAddress, tokenObj);
 
       const rawTxn = await builder.build(
         TRANSFER_COINS,
-        [coinType],
+        [tokenObj.tokenContractAddress],
         [
           toAddress,
           formatErc20TokenConvertNormal(
@@ -349,13 +360,26 @@ const AptosService = () => {
 
         WalletCommonService().getBalanceAfterTransaction(tokenObj);
       } else {
-        onTransactionFail(
-          t('onBoarding:something_went_wrong_please_try_again'),
-        );
+        console.error('Error in transactions sendCustomToken:', transactions);
+        throw t('onBoarding:something_went_wrong_please_try_again');
       }
     } catch (error) {
-      console.error('Error in sendAptosToken:', error);
-      onTransactionFail(t('onBoarding:something_went_wrong_please_try_again'));
+      console.error('Error in sendCustomToken:', error);
+      try {
+        const errorMessageMatch = JSON.parse(
+          error?.message ?? '{}',
+        )?.message?.match(/Code: (\w+)/);
+
+        const errorMessageCode = errorMessageMatch
+          ? errorMessageMatch[1]
+          : 'Unknown error';
+
+        const errorMessage =
+          aptosErrorMessages[errorMessageCode] || 'Unknown error';
+        onTransactionFail(errorMessage);
+      } catch {
+        onTransactionFail('Unknown error');
+      }
     }
   };
 
@@ -368,34 +392,14 @@ const AptosService = () => {
     tokenObj: ExistingNetworksItem,
   ): Promise<GasFeeData> => {
     try {
-      const walletAddress = getWalletAddress(tokenObj?.networkName);
-      const privateKey = await getPrivateKey();
-      const privateKeyBytes = HexString.ensure(privateKey).toUint8Array();
-      const myAccount = new AptosAccount(privateKeyBytes);
       const client = getProvider(tokenObj);
-
-      const builder = new TransactionBuilderRemoteABI(client, {
-        sender: myAccount.address(),
-      });
-
-      const rawTxn = await builder.build(
-        TRANSFER_COINS,
-        [APTOS_COIN],
-        [walletAddress, 1_000],
-      );
-
-      const transactions = await client.simulateTransaction(myAccount, rawTxn, {
-        estimateGasUnitPrice: true,
-        estimateMaxGasAmount: true,
-        estimatePrioritizedGasUnitPrice: false,
-      });
-
-      const gasFeeData: GasFeeData = transactions?.length
+      const gasObj = await client.estimateGasPrice();
+      const gasFeeData: GasFeeData = gasObj
         ? {
-            gasPrice: transactions[0]?.gas_unit_price,
+            gasPrice: gasObj.gas_estimate,
             maxFeePerGas: '',
             maxPriorityFeePerGas: '',
-            gasUsed: transactions[0]?.gas_used,
+            gasUsed: gasObj.gas_estimate,
           }
         : {
             gasPrice: 0,
@@ -450,7 +454,10 @@ const AptosService = () => {
           if (
             !transaction?.payload?.function?.toLowerCase()?.includes('register')
           ) {
-            const functionName = getTransactionFunctionName(transaction);
+            const functionName = getTransactionFunctionName(
+              transaction,
+              tokenInfo,
+            );
 
             const tx: ActivityItemInterface = {
               blockHash: '',
@@ -527,49 +534,44 @@ const AptosService = () => {
    * @returns {Promise<any>} - Returns a promise that resolves to an array containing the transaction details.
    */
   async function getTokenTransactionDetails({
-    txtType,
+    _txtType,
     tokenInfo,
     hash,
   }: ActivityRequestType): Promise<ActivityItemInterface[]> {
-    if (txtType === NetWorkType.APT || txtType === 'Supra') {
-      try {
-        const client = getProvider(tokenInfo);
-        const transaction = await client.getTransactionByHash(hash);
+    try {
+      const client = getProvider(tokenInfo);
+      const transaction = await client.getTransactionByHash(hash);
 
-        const tx: ActivityItemInterface = {
-          blockHash: '',
-          blockNumber: '',
-          confirmations: '',
-          contractAddress: '',
-          cumulativeGasUsed: '',
-          from: getTransactionSender(transaction),
-          functionName: getTransactionFunctionName(transaction),
-          gas: '',
-          gasPrice: transaction?.gas_unit_price ?? '0',
-          gasUsed: transaction?.gas_used ?? '0',
-          hash: transaction?.hash,
-          input: '',
-          isError: '',
-          methodId: '',
-          nonce: '',
-          timeStamp:
-            (Number(transaction?.timestamp ?? 0) / 1000000)?.toString() ?? '',
-          to: getTransactionToAddress(transaction),
-          transactionIndex: '',
-          txreceipt_status: transaction?.success ? '1' : '3',
-          value: getTransactionValue(transaction),
-          tokenDecimal: '8',
-          tokenName: '',
-          tokenSymbol: '',
-        };
+      const tx: ActivityItemInterface = {
+        blockHash: '',
+        blockNumber: '',
+        confirmations: '',
+        contractAddress: '',
+        cumulativeGasUsed: '',
+        from: getTransactionSender(transaction),
+        functionName: getTransactionFunctionName(transaction, tokenInfo),
+        gas: '',
+        gasPrice: transaction?.gas_unit_price ?? '0',
+        gasUsed: transaction?.gas_used ?? '0',
+        hash: transaction?.hash,
+        input: '',
+        isError: '',
+        methodId: '',
+        nonce: '',
+        timeStamp:
+          (Number(transaction?.timestamp ?? 0) / 1000000)?.toString() ?? '',
+        to: getTransactionToAddress(transaction),
+        transactionIndex: '',
+        txreceipt_status: transaction?.success ? '1' : '3',
+        value: getTransactionValue(transaction),
+        tokenDecimal: '8',
+        tokenName: '',
+        tokenSymbol: '',
+      };
 
-        return [tx];
-      } catch (error) {
-        console.error('Error in getTokenTransactionDetails:', error);
-        return [];
-      }
-    } else {
-      // Return an empty array if the transaction type is not 'APT' or 'Supra'
+      return [tx];
+    } catch (error) {
+      console.error('Error in getTokenTransactionDetails:', error);
       return [];
     }
   }
@@ -593,27 +595,38 @@ const AptosService = () => {
   ): Promise<CustomTokenInfo> => {
     try {
       const client = getProvider(tokenObj);
-      const coin = `0x1::coin::CoinInfo<${contractAddress}::`;
-
+      const coin = `0x1::coin::CoinInfo<${contractAddress}>`;
+      const addressArray = contractAddress.split('::');
+      if (addressArray.length < 3) {
+        throw 'Invalid ContractAddress';
+      }
+      const newContractAddress = addressArray[0] ?? '';
       // Get account resources using the client and the contract address
-      const tokenInfo = await client.getAccountResources(contractAddress);
-      const tokenData = tokenInfo?.find(item => item?.type.includes(coin));
+      const tokenInfo = await client.getAccountResource(
+        newContractAddress,
+        coin,
+      );
+
+      if (!tokenInfo) {
+        throw 'Invalid ContractAddress';
+      }
 
       const formattedResponseObject: CustomTokenInfo = {
-        decimals: tokenData?.data?.decimals ?? '8',
-        name: tokenData?.data?.name ?? '',
-        symbol: tokenData?.data?.symbol ?? '',
-        type: tokenData?.type ?? '',
-        contractAddress,
+        decimals: tokenInfo?.data?.decimals ?? '8',
+        name: tokenInfo?.data?.name ?? '',
+        symbol: tokenInfo?.data?.symbol ?? '',
+        type: tokenInfo?.type ?? '',
+        contractAddress: newContractAddress,
       };
 
       if (shouldFetchBalance) {
         try {
           const walletAddress = getWalletAddress(tokenObj?.networkName);
-          const resources = await client.getAccountResources(walletAddress);
-          const coinForBalance = `0x1::coin::CoinStore<${contractAddress}::`;
-          const tokenDataForBalance = resources?.find(itemObj =>
-            itemObj?.type.includes(coinForBalance),
+          const coinForBalance = `0x1::coin::CoinStore<${contractAddress}>`;
+
+          const tokenDataForBalance = await client.getAccountResource(
+            walletAddress,
+            coinForBalance,
           );
 
           const tokenBalance =
@@ -647,7 +660,6 @@ const AptosService = () => {
    * @returns {Promise<any>} - Returns a promise that resolves to the result of the registration process.
    */
   const registerCoin = async (
-    contractInfo: CustomTokenInfo,
     tokenObj: Pick<
       ExistingNetworksItem,
       | 'providerNetworkRPC_URL'
@@ -670,13 +682,10 @@ const AptosService = () => {
       const privateKeyBytes = HexString.ensure(privateKey).toUint8Array();
       const myAccount = new AptosAccount(privateKeyBytes);
 
-      let coinType = contractInfo?.type.replace('0x1::coin::CoinInfo<', '');
-      coinType = coinType.replace('>', '');
-
       // Generate a raw transaction using the client's generateTransaction method
       const rawTxn = await client.generateTransaction(walletAddress, {
         function: Aptos_Coin_Register,
-        type_arguments: [coinType],
+        type_arguments: [tokenObj?.tokenContractAddress],
         arguments: [],
       });
 
@@ -717,24 +726,25 @@ const AptosService = () => {
       | 'providerNetworkRPC_Network_Name'
       | 'networkName'
     >,
-    contractInfo: CustomTokenInfo,
   ) => {
     try {
       // Retrieve the provider using the provided token object
       const client = getProvider(tokenObj);
 
       // Get account resources using the client and the wallet address
-      const resources = await client.getAccountResources(walletAddress);
+      const coinForBalance = `0x1::coin::CoinStore<${tokenObj?.tokenContractAddress}>`;
 
-      const coin = `0x1::coin::CoinStore<${contractInfo?.contractAddress}::`;
-      const tokenData = resources?.find(item => item?.type.includes(coin));
+      const tokenData = await client.getAccountResource(
+        walletAddress,
+        coinForBalance,
+      );
 
       if (tokenData) {
         // Return the token data if it already exists
         return tokenData;
       } else {
         // Register the coin if it does not already exist
-        await registerCoin(contractInfo, tokenObj);
+        await registerCoin(tokenObj);
       }
     } catch (error: any) {
       // Display an error toast and log the error if it occurs during the check and register process
@@ -773,12 +783,13 @@ const AptosService = () => {
       for (const tokenObject of items) {
         try {
           // Get token information using the getTokenInformationFromAddress function
-          const coinInfo = await getTokenInformationFromAddress(
+          const coinInfo = await getCustomTokenInformation(
             tokenObject?.tokenContractAddress,
             tokenObject,
           );
 
-          const coin = `0x1::coin::CoinStore<${tokenObject?.tokenContractAddress}::`;
+          const coin = `0x1::coin::CoinStore<${tokenObject?.tokenContractAddress}>`;
+
           const tokenData = resources?.find(itemObj =>
             itemObj?.type.includes(coin),
           );
@@ -847,22 +858,26 @@ const AptosService = () => {
     }
   };
 
-  const getTransactionFunctionName = transaction => {
-    const isMint = transaction?.payload?.function
-      ?.toLowerCase()
-      ?.includes('mint');
-    const isAptosTransaction =
-      transaction?.payload?.type_arguments
-        ?.toString()
-        ?.toLowerCase()
-        ?.includes('aptos') ||
-      transaction?.payload?.type_arguments?.length === 0;
+  const getTransactionFunctionName = (
+    transaction,
+    tokenObj: ExistingNetworksItem,
+  ) => {
+    if (tokenObj.tokenType === 'Native') {
+      const isAptosTransaction =
+        transaction?.payload?.type_arguments
+          ?.toString()
+          ?.toLowerCase()
+          ?.includes('aptos') ||
+        transaction?.payload?.type_arguments?.length === 0;
 
-    return isMint
-      ? transaction?.payload?.function
-      : isAptosTransaction
-      ? ''
-      : transaction?.payload?.function;
+      return isAptosTransaction ? '' : transaction?.payload?.function;
+    } else {
+      const isCustomTransaction =
+        transaction?.payload?.type_arguments?.includes(
+          tokenObj.tokenContractAddress,
+        );
+      return isCustomTransaction ? transaction?.payload?.function : '';
+    }
   };
 
   const getTransactionSender = transaction => {

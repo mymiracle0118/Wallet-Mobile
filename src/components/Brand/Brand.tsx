@@ -21,22 +21,14 @@ const Brand = ({ height, width }: Props) => {
         style={[Layout.fullSize, { height, width }]}
         source={Images.ic_appLogo}
       />
-      <Text
-        style={[
-          style(Gutters).title,
-          { ...Fonts.titleSmall, ...Fonts.textCenter },
-        ]}
-      >
+      <Text style={[Fonts.titleSmall, Fonts.textCenter]}>
         {t('onBoarding:welcome_title')}
       </Text>
-      <Text
-        style={[
-          style(Gutters).subTitle,
-          { ...Fonts.titleExtraLarge, ...Fonts.textCenter },
-        ]}
-      >
-        {t('onBoarding:welcome_subTitle')?.toUpperCase()}
-      </Text>
+      <Image
+        style={style(Gutters).appNameImg}
+        source={Images.ic_app_name}
+        resizeMode="contain"
+      />
       <Text
         style={[
           Fonts.textRegularBold,

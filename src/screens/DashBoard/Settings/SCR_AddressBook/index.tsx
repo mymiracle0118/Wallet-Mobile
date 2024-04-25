@@ -29,9 +29,9 @@ import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import { removeAddressFromBook } from 'store/addressBook';
 import { RootState } from 'store/index';
-import { formatAddress } from 'theme/Helper/Address';
 import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import { showToast } from 'theme/Helper/common/Function';
+import { NetWorkType } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import mockData from 'theme/mockData';
 import ScreenNames from 'theme/screenNames';
@@ -71,9 +71,20 @@ const AddressBook: React.FC<any> = () => {
           item => item.isEVMNetwork === true,
         );
       } else {
-        filterUserList = addressBookList.filter(
-          item => item.shortName === data?.shortName,
-        );
+        if (
+          data?.shortName === NetWorkType.APT ||
+          data?.shortName === NetWorkType.SUP
+        ) {
+          filterUserList = addressBookList.filter(
+            item =>
+              item.shortName === NetWorkType.APT ||
+              item.shortName === NetWorkType.SUP,
+          );
+        } else {
+          filterUserList = addressBookList.filter(
+            item => item.shortName === data?.shortName,
+          );
+        }
       }
       setUsersAddressList(filterUserList);
     } else {
@@ -81,6 +92,7 @@ const AddressBook: React.FC<any> = () => {
     }
   }, [addressBookList]);
 
+  // Group items in usersAddressList by 'networkName' for SectionList
   const groupedData = usersAddressList.reduce((acc, item) => {
     // Group items by 'type' for SectionList
     const existingSection = acc.find(
@@ -129,9 +141,8 @@ const AddressBook: React.FC<any> = () => {
     return searchText.trim().length > 0 ? filterData : usersAddressList;
   }, [searchText, usersAddressList, filterData]);
 
-  const renderItem = ({ item, index, section }) => {
+  const renderAddressItem = ({ item, index, section }) => {
     let swipeableRef;
-
     return (
       <Swipeable
         ref={ref => (swipeableRef = ref)}
@@ -167,7 +178,7 @@ const AddressBook: React.FC<any> = () => {
           <UserAddressView
             iconPath={item?.profileIcon}
             userName={item?.userName}
-            walletAddress={formatAddress(item?.address, 'short')}
+            walletAddress={item?.address}
             containerStyle={
               style(
                 Gutters,
@@ -202,13 +213,13 @@ const AddressBook: React.FC<any> = () => {
           leftImage={Images.ic_back}
           rightImage={Images.ic_add}
           rightImageStyle={style(Gutters, Layout).headerRightImage}
-          rightSideSecondImage={Images.ic_more}
+          rightSideSecondImage={!data?.shortName && Images.ic_more}
           onPressLeftImage={() => {
             navigation.goBack();
           }}
           onPressRightImage={handleAddAddress}
           onPressRightSideSecondImage={() => {
-            setOpenBottomSheet(true);
+            !data?.shortName && setOpenBottomSheet(true);
           }}
         />
 
@@ -264,14 +275,14 @@ const AddressBook: React.FC<any> = () => {
                 <FlatList
                   data={addressListArray}
                   keyExtractor={item => item.id}
-                  renderItem={renderItem}
+                  renderItem={renderAddressItem}
                 />
               </>
             ) : (
               <SectionList
                 sections={groupedData}
                 keyExtractor={item => item.id}
-                renderItem={renderItem}
+                renderItem={renderAddressItem}
                 renderSectionHeader={({ section: { title } }) => (
                   <SectionHeader sectionTitle={title} />
                 )}
@@ -314,6 +325,7 @@ const AddressBook: React.FC<any> = () => {
             setSearchText('');
           }}
           selectedItemsId={viewType === t('common:default') ? ['1'] : ['2']}
+          enablePanDownToClose={true}
         />
       ) : (
         <></>

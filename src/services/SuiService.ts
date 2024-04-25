@@ -69,6 +69,11 @@ const SuiService = () => {
    */
   const getWalletUsingPrivateKey = (privateKey: string) => {
     try {
+      const privateKeyBytesLength = new TextEncoder().encode(privateKey).length;
+
+      if (privateKeyBytesLength !== 64) {
+        throw 'invalid key';
+      }
       // Convert the hex private key to a Uint8Array
       const strBase64 = Buffer.from(privateKey, 'hex');
       const secretKey = new Uint8Array(strBase64);
@@ -199,7 +204,7 @@ const SuiService = () => {
   const sendNativeToken = async (
     toAddress: string,
     amount: string,
-    _gasPrice: number,
+    gasPrice: number,
     _gasLimit: number,
     onTransactionRequest: (request?: {}) => void,
     onTransactionDone: (transaction: {}) => void,
@@ -219,7 +224,7 @@ const SuiService = () => {
       // Format the token amount and split coins for the transaction
       const txAmount = formatErc20TokenConvertNormal(Number(amount), 9);
       const [coin] = tx.splitCoins(tx.gas, [tx.pure(txAmount)]);
-
+      tx.setGasPrice(gasPrice);
       // Transfer the coins to the specified address
       tx.transferObjects([coin], tx.pure(toAddress));
 
@@ -261,7 +266,7 @@ const SuiService = () => {
   const sendCustomToken = async (
     toAddress: string,
     amount: string,
-    _gasPrice: number,
+    gasPrice: number,
     _gasLimit: number,
     onTransactionRequest: (request?: {}) => void,
     onTransactionDone: (transaction: {}) => void,
@@ -281,17 +286,13 @@ const SuiService = () => {
       // Format the token amount
       const txAmount = formatErc20TokenConvertNormal(Number(amount), 9);
 
-      // Construct the coin type for the transaction
-      const coinType = `${
-        tokenObj.tokenContractAddress
-      }::${tokenObj.title.toLowerCase()}::${tokenObj.title.toUpperCase()}`;
-
       // Transfer the specified amount of coins to the provided address
       const result = await transferCoinToMany(
         [toAddress],
         [txAmount],
-        coinType,
+        tokenObj.tokenContractAddress,
         tokenObj,
+        gasPrice,
       );
 
       // Handle the transaction result accordingly
@@ -326,9 +327,9 @@ const SuiService = () => {
     amounts: number[],
     coinType: string,
     tokenObj: ExistingNetworksItem,
+    gasPrice: number,
   ) => {
     const tx = new SuiTxBlock();
-
     // Get the owner's wallet address based on the network information
     const ownerAddress = getWalletAddress(
       tokenObj?.networkName,
@@ -353,6 +354,7 @@ const SuiService = () => {
       recipients,
       amounts,
     );
+    tx.setGasPrice(gasPrice);
 
     // Sign and send the transaction and return the result
     return signAndSendTxn(tx, tokenObj);
@@ -526,8 +528,17 @@ const SuiService = () => {
               ) {
                 toAddress = balanceChange?.owner?.AddressOwner ?? '';
                 value = balanceChange?.amount ?? '0';
-                if (!balanceChange.coinType?.includes('sui::SUI')) {
-                  functionName = balanceChange?.coinType ?? '';
+
+                if (txtType !== NetWorkType.SUI) {
+                  if (
+                    balanceChange?.coinType === tokenInfo.tokenContractAddress
+                  ) {
+                    functionName = balanceChange?.coinType ?? '';
+                  }
+                } else {
+                  if (!balanceChange.coinType?.includes('sui::SUI')) {
+                    functionName = balanceChange?.coinType ?? '';
+                  }
                 }
               }
             }
@@ -617,16 +628,45 @@ const SuiService = () => {
         let toAddress = '';
         let functionName = '';
         let value = '0';
+        let garPrice = '0';
 
-        for (const balanceChange of transaction?.balanceChanges) {
+        const ownerAddress = getWalletAddress(
+          tokenInfo?.networkName,
+          tokenInfo?.isEVMNetwork,
+        );
+
+        const receiverBalanceChange = transaction?.balanceChanges?.filter(
+          function (item) {
+            return (
+              item?.owner?.AddressOwner !==
+              transaction?.transaction?.data?.sender
+            );
+          },
+        );
+        if (receiverBalanceChange?.length) {
+          toAddress = receiverBalanceChange[0]?.owner?.AddressOwner ?? '';
+          value = receiverBalanceChange[0]?.amount ?? '0';
+          if (!receiverBalanceChange[0].coinType?.includes('sui::SUI')) {
+            functionName = receiverBalanceChange[0].coinType;
+          }
+        }
+
+        const ownerBalanceChange = transaction?.balanceChanges?.filter(
+          function (item) {
+            return item?.owner?.AddressOwner === ownerAddress;
+          },
+        );
+
+        if (ownerBalanceChange?.length) {
           if (
-            balanceChange?.owner?.AddressOwner !==
-            transaction?.transaction?.data?.sender
+            ownerBalanceChange[0]?.coinType?.includes('sui::SUI') &&
+            parseFloat(ownerBalanceChange[0]?.amount) < 0
           ) {
-            toAddress = balanceChange?.owner?.AddressOwner ?? '';
-            value = balanceChange?.amount ?? '0';
-            if (!balanceChange.coinType?.includes('sui::SUI')) {
-              functionName = balanceChange.coinType;
+            if (tokenInfo.tokenType === 'Native') {
+              garPrice =
+                parseFloat(ownerBalanceChange[0]?.amount) + parseFloat(value);
+            } else {
+              garPrice = ownerBalanceChange[0]?.amount;
             }
           }
         }
@@ -640,7 +680,7 @@ const SuiService = () => {
           from: transaction?.transaction?.data?.sender ?? '',
           functionName: functionName,
           gas: '',
-          gasPrice: transaction?.transaction?.data?.gasData?.price ?? '0',
+          gasPrice: Math.abs(garPrice) + '',
           gasUsed: '',
           hash: hash,
           input: '',
@@ -686,63 +726,35 @@ const SuiService = () => {
     >,
   ): Promise<CustomTokenInfo | null> => {
     try {
-      //TODO: balance
       const suiProvider = getProvider(tokenObj);
 
-      const contractObj = await suiProvider.getObject({
-        id: contractAddress,
-        options: {
-          showPreviousTransaction: true,
-        },
+      const tokenInfo = await suiProvider.getCoinMetadata({
+        coinType: contractAddress,
       });
-
-      let transactionBlock = await suiProvider.getTransactionBlock({
-        digest: contractObj?.data?.previousTransaction,
-        options: {
-          showObjectChanges: true,
-        },
-      });
-
-      const publishedData = transactionBlock?.objectChanges?.filter(function (
-        itemObj,
-      ) {
-        return itemObj.type === 'published';
-      });
-
-      if (publishedData?.length) {
-        let tokenSymbol = publishedData[0]?.modules[0];
-        if (tokenSymbol) {
-          const tokenInfo = await suiProvider.getCoinMetadata({
-            coinType: `${contractAddress}::${tokenSymbol.toLowerCase()}::${tokenSymbol.toUpperCase()}`,
-          });
-
-          const balance = await getSuiCustomTokenBalance(
-            [
-              {
-                ...tokenObj,
-                ...{
-                  subTitle: tokenSymbol,
-                  tokenContractAddress: contractAddress,
-                },
-              },
-            ],
-            false,
-          );
-          return {
-            decimals: tokenInfo?.decimals ?? '9',
-            name: tokenInfo?.name ?? '',
-            symbol: tokenInfo?.symbol ?? '',
-            type: '',
-            contractAddress: contractAddress,
-            logoURI: tokenInfo?.iconUrl ?? '',
-            balance: balance[0].tokenBalance,
-          };
-        } else {
-          throw new Error('Invalid Error');
-        }
-      } else {
-        throw new Error('Invalid Error');
+      if (!tokenInfo) {
+        throw 'Invalid ContractAddress';
       }
+      const balance = await getSuiCustomTokenBalance(
+        [
+          {
+            ...tokenObj,
+            ...{
+              subTitle: tokenInfo?.name ?? '',
+              tokenContractAddress: contractAddress,
+            },
+          },
+        ],
+        false,
+      );
+      return {
+        decimals: tokenInfo?.decimals ?? '9',
+        name: tokenInfo?.name ?? '',
+        symbol: tokenInfo?.symbol ?? '',
+        type: '',
+        contractAddress: contractAddress,
+        logoURI: tokenInfo?.iconUrl ?? '',
+        balance: balance[0].tokenBalance,
+      };
     } catch (error: any) {
       // showToast('error', t('common:something_went_wrong_please_try_again'));
       console.log('Failed to fetch token info: ' + error);
@@ -771,17 +783,13 @@ const SuiService = () => {
       }[] = [];
 
       for (const tokenObject of item) {
-        const coinType = `${
-          tokenObject.tokenContractAddress
-        }::${tokenObject.subTitle.toLowerCase()}::${tokenObject.subTitle.toUpperCase()}`;
-
         const tokenInfo = await suiProvider.getCoinMetadata({
-          coinType: coinType,
+          coinType: tokenObject.tokenContractAddress,
         });
 
         const tokenBalance = await suiProvider.getBalance({
           owner: walletAddress,
-          coinType: coinType,
+          coinType: tokenObject.tokenContractAddress,
         });
 
         const formattedBalance = formatErc20Token(

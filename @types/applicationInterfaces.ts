@@ -10,6 +10,10 @@ export interface SortingItem {
   networkId?: string;
 }
 
+export interface ErrorMessages {
+  [key: string]: string;
+}
+
 export interface RecoveryOptionItemType {
   id: string;
   image: string;

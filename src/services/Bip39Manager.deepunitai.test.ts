@@ -4,6 +4,8 @@ import Bip39Manager from './Bip39Manager';
 
 // Creating a suite of tests with a common label
 describe('Bip39Manager', function () {
+  // Instantiating Bip39Manager
+  const Manager = Bip39Manager();
   // Resetting all mocks before each test
   beforeEach(() => {
     jest.resetAllMocks();
@@ -16,8 +18,6 @@ describe('Bip39Manager', function () {
   it('should create mnemonic', () => {
     // Mocking the bip39.generateMnemonic function
     jest.spyOn(bip39, 'generateMnemonic').mockReturnValue('mocked mnemonic');
-    // Instantiating Bip39Manager
-    const Manager = Bip39Manager();
     // Testing if the function returns the set mnemonic in test mode
     const mnemonic = Manager.createMnemonic(true);
     expect(mnemonic).toBe(
@@ -32,8 +32,7 @@ describe('Bip39Manager', function () {
     // Mocking the bip39.mnemonicToSeedSync function
     const mockSeed = Buffer.from('mocked seed');
     jest.spyOn(bip39, 'mnemonicToSeedSync').mockReturnValue(mockSeed);
-    // Instantiating Bip39Manager
-    const Manager = Bip39Manager();
+
     // Testing if the function returns the correct seed
     const seed = Manager.getSeedUsingMnemonic('mocked mnemonic');
     expect(seed).toEqual(mockSeed);
@@ -42,8 +41,7 @@ describe('Bip39Manager', function () {
   it('should validate mnemonic', () => {
     // Mocking the bip39.validateMnemonic function
     jest.spyOn(bip39, 'validateMnemonic').mockReturnValue(true);
-    // Instantiating Bip39Manager
-    const Manager = Bip39Manager();
+
     // Testing if the function returns the correct validation
     const isValid = Manager.isMnemonicValid('mocked mnemonic');
     expect(isValid).toBe(true);

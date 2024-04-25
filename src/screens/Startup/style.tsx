@@ -8,10 +8,11 @@ export const style = (Gutters: typeof gutters, Layout: typeof layout) => {
       ...Gutters.tinySmallPadding,
       ...Layout.colCenter,
     },
-    titleStyle: {
-      letterSpacing: 7,
-    },
     icon: { height: 160, width: 160 },
     faceId: { height: 56, width: 56 },
+    appNameImg: {
+      height: 40,
+      width: 200,
+    },
   });
 };

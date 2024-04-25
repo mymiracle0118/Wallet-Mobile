@@ -11,9 +11,6 @@ export const style = (
   Fonts: typeof fonts,
 ) => {
   return getStyleSheet().create({
-    container: {
-      // ...Gutters.tinyHPadding,
-    },
     flatList: {
       backgroundColor: Colors.blackGray,
       ...Layout.fillShrink,

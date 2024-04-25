@@ -34,8 +34,6 @@ jest.mock('react-native', () => ({
   },
 }));
 
-// Mocking react-native-permissions and react-native modules
-
 describe('PermissionService', function () {
   // Initialize the PermissionService
   const PermissionServiceInstance = PermissionService();

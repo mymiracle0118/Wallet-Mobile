@@ -90,7 +90,7 @@ Checks object isExists or not and store data
 */
   const onSelectPhrasePress = (item: string) => {
     let isExists = false;
-    selectedPhrase.filter(itemTemp => {
+    selectedPhrase.forEach(itemTemp => {
       if (itemTemp.value === item) {
         isExists = true;
       }
@@ -147,34 +147,22 @@ Render selected seed phrase item
   /*
 Redirect To congratulations Screen and pass dynamic params and method for next screen
 */
-  const redirectToNextScreen = () => {
+  const updateUserInfo = () => {
+    const user = {
+      userName: userData.userName,
+      userId: userData.currentUserId,
+      isWalletFromSeedPhase: true,
+      profileIcon: colorPalette[getRandomIndex(colorPalette.length)],
+      isPrimary: true,
+    };
+
+    dispatch(updateCreateUser({ data: [user] }));
+    dispatch(updateCurrentUser({ data: user }));
     navigation.push(ScreenNames.ActionComplete, {
       title: t('onBoarding:congratulations_title'),
       subTitle: t('onBoarding:congratulations_subTitle'),
       redirectToNextScreen: () => {},
       shouldShowAnimation: true,
-    });
-  };
-
-  const updateUserInfo = () => {
-    const user = {
-      userName: userData.userName,
-      userId: userData.currentUserId,
-      derivationPathIndex: '0',
-      isWalletFromSeedPhase: true,
-      profileIcon: colorPalette[getRandomIndex(colorPalette.length)],
-    };
-
-    dispatch(updateCreateUser({ data: [user] }));
-    dispatch(updateCurrentUser({ data: user }));
-    navigation.push(ScreenNames.RecoveryVideo, {
-      title: t('onBoarding:create_a_PRO_account_video_title'),
-      subTitle: t('onBoarding:create_a_PRO_account_video_subTitle'),
-      videoUrl:
-        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-      btnText: t('onBoarding:great'),
-      shouldHideBackBtn: true,
-      redirectToNextScreen,
     });
   };
 
@@ -198,6 +186,7 @@ Redirect To congratulations Screen and pass dynamic params and method for next s
             data={selectedPhrase}
             renderItem={renderSelectedPhraseItem}
             columnWrapperStyle={[Layout.justifyContentBetween]}
+            keyExtractor={item => item.value.toString()}
           />
         </View>
         <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
@@ -229,6 +218,7 @@ Redirect To congratulations Screen and pass dynamic params and method for next s
             bounces={false}
             data={shuffleSeedPhraseArray}
             renderItem={renderPhraseItem}
+            keyExtractor={item => item.toString()}
           />
         </View>
         <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />

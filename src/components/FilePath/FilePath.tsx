@@ -26,7 +26,7 @@ const FilePath = ({ filePath, onPressClose, iconPath }: Props) => {
     <View style={[style(Gutters, Layout).fileUrlView]}>
       <Text style={[Fonts.textSmallBold, Layout.fill]}>{filePath}</Text>
       <VerticalSeparatorView spacing={Variables.MetricsSizes.tiny} />
-      <Pressable onPress={onPressClose}>
+      <Pressable testID="button" onPress={onPressClose}>
         <Image
           style={[style(Gutters, Layout).icon]}
           resizeMode="contain"

@@ -158,19 +158,11 @@ Redirect To DecryptFilePassword Screen
                 item={item}
                 isEnabled={selectedTokensList?.includes(item.id)}
                 onPress={itemObj => {
-                  if (redirectFrom === ScreenNames.CreateAccount) {
-                    dispatch(
-                      addRemoveTokenFromList({
-                        token: itemObj,
-                      }),
-                    );
-                  } else {
-                    dispatch(
-                      addRemoveTokenFromList({
-                        token: itemObj,
-                      }),
-                    );
-                  }
+                  dispatch(
+                    addRemoveTokenFromList({
+                      token: itemObj,
+                    }),
+                  );
                 }}
               />
             )}

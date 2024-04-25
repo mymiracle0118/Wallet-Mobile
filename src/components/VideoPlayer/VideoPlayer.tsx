@@ -50,9 +50,6 @@ const VideoPlayer = ({
           onError={(event: any) => {
             console.log('Video Error ::', event);
           }}
-          onEnd={() => {
-            console.log('onEnd ::');
-          }}
           bufferConfig={bufferConfig}
           controls={true}
           resizeMode={'stretch'}

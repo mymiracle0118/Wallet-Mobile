@@ -22,6 +22,7 @@ export default function SecretPhrasesList({ data }: Props) {
         style(Gutters, Layout, Colors).flatListContentContainer
       }
       scrollEnabled={false}
+      keyExtractor={item => item.toString()}
       renderItem={({ item, index }) => (
         <View style={style(Gutters, Layout, Colors).flatListItem}>
           <Text

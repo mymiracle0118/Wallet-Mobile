@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { FlatList, ScrollView, Text, View } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
+import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
   HorizontalSeparatorView,
   SafeAreaWrapper,
-  TabBar,
   BasicAccountsListRawItem,
   BasicAccountsOptionsRawItem,
   HeaderTitleWithLeftSideCloseIcon,
@@ -31,15 +30,11 @@ import { PopUpItem } from 'types/applicationInterfaces';
 import { style } from './style';
 
 const Accounts = () => {
-  const { Common, Colors, Fonts, Gutters, Images } = useTheme();
+  const { Common, Colors, Fonts, Images } = useTheme();
 
   const navigation = useNavigation<StackNavigationProp<any>>();
   const dispatch = useDispatch<AppDispatch>();
   const isFocused = useIsFocused();
-
-  const tabs = ['common:tab_types.basic', 'common:tab_types.pro'];
-
-  const [activeTab, setActiveTab] = useState<number>(0);
 
   const userInfo = useSelector((state: RootState) => {
     return {
@@ -47,7 +42,7 @@ const Accounts = () => {
       usersData: state.userInfo.data.usersData,
       importedUsersData: state.userInfo.data.importedUsersData,
     };
-  });
+  }, shallowEqual);
 
   const seedPhrase = useSelector((state: RootState) => {
     return state.wallet.data.seedPhrase;
@@ -107,7 +102,7 @@ const Accounts = () => {
     }
   }, [hideUser]);
 
-  const renderAccountItem = ({ item, index }): React.JSX.Element => {
+  const renderAccountItem = ({ item }): React.JSX.Element => {
     return (
       <BasicAccountsListRawItem
         item={item}
@@ -146,10 +141,7 @@ const Accounts = () => {
             });
           }
         }}
-        isShowHideOption={
-          (item?.isWalletFromSeedPhase && index !== 0) ||
-          !item?.isWalletFromSeedPhase
-        }
+        isShowHideOption={!item?.isPrimary}
       />
     );
   };
@@ -192,27 +184,7 @@ const Accounts = () => {
           }}
         />
 
-        <TabBar
-          tabs={tabs}
-          activeTab={activeTab}
-          setActiveTab={index => {
-            if (activeTab === index) {
-              return;
-            }
-            setActiveTab(index);
-          }}
-          activeTabStyle={{
-            backgroundColor: Colors.textGray800,
-          }}
-          activeTabTextStyle={{
-            color: Colors.white,
-          }}
-          tabBarStyle={Gutters.smallTMargin}
-        />
-
         <ScrollView showsVerticalScrollIndicator={false}>
-          <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
-
           <FlatList
             data={userInfo.usersData}
             keyExtractor={item => item.userId}
@@ -220,7 +192,6 @@ const Accounts = () => {
             scrollEnabled={false}
             contentContainerStyle={style(Colors).flatListBG}
           />
-
           {userInfo.importedUsersData.length !== 0 && (
             <>
               <HorizontalSeparatorView
@@ -239,9 +210,7 @@ const Accounts = () => {
               />
             </>
           )}
-
           <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
-
           <FlatList
             data={
               isWalletFromSeedPhase

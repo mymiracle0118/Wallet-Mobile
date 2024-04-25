@@ -1,22 +1,24 @@
 import { Keypair } from '@solana/web3.js';
 import base58 from 'bs58';
 import { store } from 'store/index';
-import { NetWorkType } from 'theme/Helper/constant';
+import { NetWorkType, defaultNetwork } from 'theme/Helper/constant';
 import { ExistingNetworksItem } from 'types/apiResponseInterfaces';
 
 import EthersService from './EthersService';
 import SolanaService from './SolanaService';
 import SuiService from './SuiService';
+import WalletCommonService from './WalletCommonService';
 
 const WalletSigner = () => {
   const signWallet = async (item: ExistingNetworksItem) => {
     let cachedWallet;
 
+    const derivationPathIndex = WalletCommonService().getDerivationPathIndex(
+      item.isEVMNetwork ? defaultNetwork : item.networkName,
+    );
     switch (item.networkName) {
       case NetWorkType.SUI:
-        cachedWallet = SuiService().getKeypairUsingSeed(
-          store.getState().userInfo.data.currentUser.derivationPathIndex,
-        );
+        cachedWallet = SuiService().getKeypairUsingSeed(derivationPathIndex);
         break;
 
       case NetWorkType.APT:
@@ -29,7 +31,7 @@ const WalletSigner = () => {
         if (store.getState().userInfo.data.currentUser.isWalletFromSeedPhase) {
           const wallet = await SolanaService().getWalletUsingSeed(
             store.getState().wallet.data.seedPhrase,
-            store.getState().userInfo.data.currentUser.derivationPathIndex,
+            derivationPathIndex,
           );
           secretKey = wallet?.secretKey;
         } else {
@@ -42,9 +44,8 @@ const WalletSigner = () => {
 
       default:
         if (!cachedWallet) {
-          cachedWallet = EthersService().getWalletUsingSeed(
-            store.getState().userInfo.data.currentUser.derivationPathIndex,
-          );
+          cachedWallet =
+            EthersService().getWalletUsingSeed(derivationPathIndex);
         }
         cachedWallet = cachedWallet.connect(
           EthersService().getProvider(

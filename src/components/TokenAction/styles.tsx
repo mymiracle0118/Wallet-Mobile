@@ -1,7 +1,7 @@
-import { gutters, layout } from 'theme';
+import { layout } from 'theme';
 import getStyleSheet from 'theme/Helper/currentStyleSheet';
 
-export const style = (Gutters: typeof gutters, Layout: typeof layout) => {
+export const style = (Layout: typeof layout) => {
   return getStyleSheet().create({
     button: {
       ...Layout.center,

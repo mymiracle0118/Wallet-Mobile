@@ -19,10 +19,7 @@ const TextButton = ({ text, onPress, btnStyle, testId }: Props) => {
       hitSlop={{ top: 16, bottom: 16 }}
       testID={testId ? testId : 'button'}
       onPress={onPress}
-      style={({ pressed }) => [
-        style(Gutters, Layout, pressed).button,
-        { ...btnStyle },
-      ]}
+      style={[style(Gutters, Layout).button, { ...btnStyle }]}
     >
       <Text style={Fonts.textRegularBold}>{text}</Text>
     </Pressable>

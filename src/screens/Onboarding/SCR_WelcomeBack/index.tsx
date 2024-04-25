@@ -57,7 +57,7 @@ Redirect To Recovery Completed Screen and pass dynamic params and method for nex
 
   return (
     <SafeAreaWrapper applyToOnlyTopEdge={false}>
-      <BackgroundView image={Images.background.ic_backgroundGradientLayer} />
+      <BackgroundView image={Images.background.ic_bg_welcome} />
       <View style={style(Gutters, Layout).subView}>
         {redirectFrom === ScreenNames.Welcome && (
           <HeaderWithTitleAndSubTitle hasLargeTitle={false} />
@@ -71,7 +71,6 @@ Redirect To Recovery Completed Screen and pass dynamic params and method for nex
               : Images.ic_avatar
           }
         />
-        <HorizontalSeparatorView spacing={Variables.MetricsSizes.regular} />
 
         {redirectFrom === ScreenNames.Welcome ? (
           <Text style={Fonts.textLargeRegular}>

@@ -21,9 +21,9 @@ export const style = (
     },
     markerStyle: {
       backgroundColor: Colors.textPurple,
-      borderRadius: 11,
-      height: 22,
-      width: 22,
+      borderRadius: 9,
+      height: 18,
+      width: 18,
       borderWidth: 0,
       top: 2,
     },

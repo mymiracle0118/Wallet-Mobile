@@ -19,13 +19,12 @@ jest.mock('store', () => ({
   },
 }));
 
-// Mocking the store's dispatch function
-// Mocking the store's dispatch function
 // Mocking the fetch function
 describe('USDConversionService', function () {
   jest.fn();
   beforeEach(() => {
     global.fetch = fetchMock;
+    jest.useFakeTimers();
     // Clear all instances and calls to constructor and all methods:
     jest.resetAllMocks();
   });
@@ -102,7 +101,6 @@ describe('USDConversionService1', function () {
   afterEach(() => {
     jest.restoreAllMocks();
   });
-  // Test the fetchUSDPrice function
 
   // Test the fetchUSDPrice function when the API returns an error
   it('fetchUSDPrice should return error when API fails', async () => {

@@ -1,6 +1,9 @@
 /* eslint-disable react/require-default-props */
 import React from 'react';
 import { Pressable, Text, ViewStyle } from 'react-native';
+import LinearGradient from 'react-native-linear-gradient';
+
+import { gradientColorAngle } from 'theme/Helper/constant';
 
 import { useTheme } from '../../hooks';
 import { style } from './styles';
@@ -8,7 +11,7 @@ import { style } from './styles';
 type Props = {
   text: string;
   onPress: () => void;
-  backGroundColor?: string;
+  colors?: [];
   btnStyle?: ViewStyle;
   btnTextColor?: string;
   disabled?: boolean;
@@ -18,7 +21,7 @@ type Props = {
 const Button = ({
   text,
   onPress,
-  backGroundColor,
+  colors,
   btnStyle,
   btnTextColor,
   disabled,
@@ -27,34 +30,33 @@ const Button = ({
   const { Layout, Colors, Fonts, Gutters } = useTheme();
 
   return (
-    <Pressable
-      disabled={disabled}
-      testID={testId ? testId : 'button'}
-      onPress={onPress}
-      style={({ pressed }) => [
-        style(
-          Gutters,
-          Layout,
-          pressed,
-          backGroundColor ? backGroundColor : Colors.primary,
-        ).button,
-        { ...btnStyle },
-      ]}
+    <LinearGradient
+      style={[style(Gutters, Layout).circleGradient, { ...btnStyle }]}
+      useAngle={true}
+      angle={gradientColorAngle}
+      colors={colors ? colors : Colors.primaryGradientColor}
     >
-      <Text
-        style={[
-          Fonts.textRegularBold,
-          { color: btnTextColor ? btnTextColor : Colors.white },
-        ]}
+      <Pressable
+        disabled={disabled}
+        testID={testId ? testId : 'button'}
+        onPress={onPress}
+        style={style(Gutters, Layout).button}
       >
-        {text}
-      </Text>
-    </Pressable>
+        <Text
+          style={[
+            Fonts.textRegularBold,
+            { color: btnTextColor ? btnTextColor : Colors.white },
+          ]}
+        >
+          {text}
+        </Text>
+      </Pressable>
+    </LinearGradient>
   );
 };
 
 Button.defaultProps = {
-  backGroundColor: '',
+  colors: undefined,
   btnTextColor: '',
   disabled: false,
 };

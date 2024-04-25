@@ -1,4 +1,6 @@
 import React from 'react';
+import { StyleSheet } from 'react-native';
+import { height } from 'react-native-size-scaling';
 
 import useTheme from 'hooks/useTheme';
 import Lottie from 'lottie-react-native';
@@ -17,6 +19,7 @@ export default function LottieAnimations({ type }: Props) {
         <Lottie
           testID="lottie-animation-view"
           source={Animations.congratulations}
+          style={[StyleSheet.absoluteFill, { height: height }]}
           autoPlay
           loop
         />

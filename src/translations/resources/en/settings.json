@@ -53,5 +53,6 @@
   "secret_private_key_file_has_been_stored_to_folder": "{{fileName}} file has been stored to {{folderName}} folder",
   "Duplicated_label": "Duplicated label",
   "backup_the_private_key_before_hiding_the_account": "Backup the private key before hiding the account",
-  "if_you_want_to_import_it_later_you_will_need_the_private_key": "If you want to import it later, you will need the private key"
+  "if_you_want_to_import_it_later_you_will_need_the_private_key": "If you want to import it later, you will need the private key",
+  "label_is_already_added": "Label is already added"
 }

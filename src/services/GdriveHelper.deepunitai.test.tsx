@@ -57,7 +57,6 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
   },
 }));
 
-// Test case
 test('Google Signin', () => {
   // Calling the mock methods
   GoogleSignin.signIn();
@@ -73,8 +72,6 @@ test('Google Signin', () => {
   expect(GoogleSignin.getTokens).toHaveBeenCalled();
   expect(GoogleSignin.configure).toHaveBeenCalled();
 });
-
-// Mocking the necessary modules and files
 
 // Mocking the necessary modules and files
 describe('GdriveHelper', function () {
@@ -162,6 +159,7 @@ describe('GdriveHelper', function () {
       GoogleSignin.signIn.mockImplementationOnce(() => Promise.resolve());
       // Mocking the implementation of getTokens to return a promise that resolves to an object with a property accessToken
       GoogleSignin.getTokens.mockImplementationOnce(() =>
+        // file deepcode ignore HardcodedNonCryptoSecret/test
         Promise.resolve({ accessToken: 'testAccessToken' }),
       );
       await loginWithGoogle();
@@ -170,5 +168,3 @@ describe('GdriveHelper', function () {
     });
   });
 });
-
-// jest mock functions for the modules

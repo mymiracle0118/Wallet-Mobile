@@ -7,12 +7,8 @@ import KeyChainService from './KeyChainService';
 
 // Mocking imported modules and functions to isolate tests to KeyChainService functions only
 jest.mock('react-native-keychain');
-
 jest.mock('i18next');
-
 jest.mock('theme/Helper/common/Function');
-
-// Mocking imported modules and functions to isolate tests to KeyChainService functions only
 
 // Mocking imported modules and functions to isolate tests to KeyChainService functions only
 describe('KeyChainService', function () {
@@ -27,6 +23,7 @@ describe('KeyChainService', function () {
   // Testing storePassWordInKeyChain function
   // We want to ensure that the correct password is being stored in keychain
   it('storePassWordInKeyChain should store password in keychain', async () => {
+    // deepcode ignore NoHardcodedPasswords/test
     const password = 'testPassword';
     const KeyChain = KeyChainService();
     await KeyChain.storePasswordInKeyChain(password);
@@ -35,6 +32,7 @@ describe('KeyChainService', function () {
   // Testing getPassWordFromKeyChain function
   // We want to ensure that the correct password is being retrieved from keychain
   it('getPassWordFromKeyChain should retrieve password from keychain', async () => {
+    // deepcode ignore NoHardcodedPasswords/test
     const password = 'testPassword';
     (Keychain.getGenericPassword as jest.Mock).mockResolvedValue({ password });
     const KeyChain = KeyChainService();

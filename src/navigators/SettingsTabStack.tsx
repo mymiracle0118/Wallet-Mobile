@@ -4,23 +4,23 @@ import {
   CardStyleInterpolators,
   createStackNavigator,
 } from '@react-navigation/stack';
-import AddAddress from 'screens/DashBoard/Settings/SCR_AddAddress';
-import AddressBook from 'screens/DashBoard/Settings/SCR_AddressBook';
-import AutolockTimer from 'screens/DashBoard/Settings/SCR_AutolockTimer';
-import Currency from 'screens/DashBoard/Settings/SCR_Currency';
-import Language from 'screens/DashBoard/Settings/SCR_Language';
-import SecretRecoveryPhrase from 'screens/DashBoard/Settings/SCR_SecretRecoveryPhrase';
-import Security from 'screens/DashBoard/Settings/SCR_Security';
-import SocialRecovery from 'screens/DashBoard/Settings/SCR_SocialRecovery';
-import WalletAddressScanner from 'screens/DashBoard/Wallet/SCR_WalletAddressScanner';
-import CreateAccountRecoveryVideo from 'screens/Onboarding/SCR_CreateAccountRecoveryVideo';
 import {
+  AddAddress,
+  AddressBook,
+  AutoLockTimer,
   BackUpFirstRecoveryPhrase,
   BackUpWalletUsingDevice,
   BackUpWalletUsingGuarantor,
   BackUpWalletUsingIcloud,
+  CreateAccountRecoveryVideo,
   CreatePassword,
+  Currency,
+  Language,
+  SecretRecoveryPhrase,
+  Security,
   Settings,
+  SocialRecovery,
+  WalletAddressScanner,
 } from 'screens/index';
 
 import { ScreenNames } from '../theme';
@@ -39,8 +39,8 @@ const SettingsTabStack = () => {
         component={SecretRecoveryPhrase}
       />
       <Stack.Screen
-        name={ScreenNames.AutolockTimer}
-        component={AutolockTimer}
+        name={ScreenNames.AutoLockTimer}
+        component={AutoLockTimer}
       />
 
       <Stack.Screen name={ScreenNames.Currency} component={Currency} />

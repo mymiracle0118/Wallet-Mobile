@@ -33,9 +33,6 @@ describe('PrivateKeyService', function () {
     (Bip39Manager as jest.Mock).mockReturnValue({
       getSeedUsingMnemonic: jest.fn().mockReturnValue(mockSeed),
     });
-    // (HDKey.fromMasterSeed as jest.Mock).mockReturnValue({
-    //   privateKey: mockPrivateKey,
-    // });
 
     const { createPrivateKeyUsingSeed } = PrivateKeyService();
     const privateKey = await createPrivateKeyUsingSeed(
@@ -64,16 +61,10 @@ describe('PrivateKeyService', function () {
       mockMnemonic,
       mockPathIndex,
     );
-    // Expectations
-    // expect(showToast).toHaveBeenCalledWith(
-    //   'error',
-    //   t('common:Invalid_seed_phrase'),
-    // );
+
     expect(privateKey).toBeUndefined();
   });
 });
-
-// Mocking the external modules
 
 // Mocking the external modules
 describe('PrivateKeyService', function () {
@@ -90,9 +81,7 @@ describe('PrivateKeyService', function () {
     (Bip39Manager as jest.Mock).mockReturnValue({
       getSeedUsingMnemonic: jest.fn().mockReturnValue(mockSeed),
     });
-    // (HDKey.fromMasterSeed as jest.Mock).mockReturnValue({
-    //   privateKey: mockPrivateKey,
-    // });
+
     const result = await PrivateKeyService().createPrivateKeyUsingSeed(
       'mnemonic',
     );
@@ -100,12 +89,6 @@ describe('PrivateKeyService', function () {
       'mnemonic',
     );
 
-    // expect(HDKey.fromMasterSeed as jest.Mock).toHaveBeenCalledWith(
-    //   mockSeed.toString('hex'),
-    // );
-    // expect(mockHDKeyInstance.derive).toHaveBeenCalledWith(
-    //   `m/44'/784'/0'/0'/0'`,
-    // );
     expect(result).toBe(undefined);
   });
   it('should handle error and show toast', async () => {
@@ -116,9 +99,5 @@ describe('PrivateKeyService', function () {
     });
     const res = await PrivateKeyService().createPrivateKeyUsingSeed('mnemonic');
     expect(res).toBeUndefined();
-    // expect(showToast).toHaveBeenCalledWith(
-    //   'error',
-    //   'common:Invalid_seed_phrase',
-    // );
   });
 });

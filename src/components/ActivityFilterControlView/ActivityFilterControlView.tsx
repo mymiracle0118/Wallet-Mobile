@@ -15,7 +15,7 @@ const ActivityFilterControlView = ({ onPressFilter, title }: Props) => {
   return (
     <View style={style(Layout).container}>
       <Text style={[Fonts.textSmallMediumExtraBold, Layout.fill]}>{title}</Text>
-      <TouchableOpacity onPress={onPressFilter}>
+      <TouchableOpacity testID="Filter" onPress={onPressFilter}>
         <Image
           style={style(Layout).icon}
           source={Images.ic_filter}

@@ -14,11 +14,12 @@ describe('AddTokenItem', () => {
     subTitle: 'Token Subtitle',
     networkName: 'Ethereum',
     image: Images.background, // Replace with the actual path
+    tokenType: 'ERC20',
   };
 
   const mockProps = {
     item: mockItem,
-    selectedId: '1',
+    selected: true,
     onSelect: jest.fn(),
   };
 

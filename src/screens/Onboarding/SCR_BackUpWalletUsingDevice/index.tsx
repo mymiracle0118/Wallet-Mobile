@@ -1,6 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { BackHandler, Platform, View } from 'react-native';
+import {
+  BackHandler,
+  KeyboardAvoidingView,
+  Platform,
+  View,
+} from 'react-native';
 import { openSettings } from 'react-native-permissions';
+import { scale } from 'react-native-size-scaling';
+import { useSelector } from 'react-redux';
 
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -17,19 +24,30 @@ import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import FileManagerService from 'services/FileManagerService';
 import PermissionService from 'services/PermissionService';
+import { RootState } from 'store/index';
 import { showAlert } from 'theme/Helper/common/Function';
 import {
   DirectoryPath,
   FileRecoveryTempPath,
-  recoveryFileNamePreFix,
+  tempRecoveryFileNamePreFix,
 } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import ScreenNames from 'theme/screenNames';
 
+import { style } from './style';
+
 export default function BackUpWalletUsingDevice() {
   const navigation = useNavigation<StackNavigationProp<any>>();
-  const { Common, Layout, Images } = useTheme();
+  const { Common, Layout, Images, Colors } = useTheme();
+
+  const userName = useSelector((state: RootState) => {
+    return state.userInfo?.data?.userName;
+  });
+
   const [bottomTitleHeight, setBottomTitleHeight] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [recoveryFileNamePreFix, setRecoveryFileNamePreFix] =
+    useState(userName);
 
   /*
   Asynchronous function to request write storage permission
@@ -40,7 +58,7 @@ export default function BackUpWalletUsingDevice() {
     let permissionStatus =
       await PermissionService().requestWriteStoragePermission();
     if (permissionStatus === 'granted') {
-      moveFile();
+      copyFile();
     } else {
       showAlert(
         '',
@@ -52,19 +70,16 @@ export default function BackUpWalletUsingDevice() {
   };
 
   // Asynchronous function to moveFile using FileManagerService and store a file in local
-  const moveFile = async () => {
-    await FileManagerService().moveFile(
-      FileRecoveryTempPath + `/${recoveryFileNamePreFix}1.json`,
-      DirectoryPath + `/${recoveryFileNamePreFix}1.json`,
+  const copyFile = async () => {
+    await FileManagerService().copyFile(
+      FileRecoveryTempPath + `/${tempRecoveryFileNamePreFix}1.json`,
+      DirectoryPath + `/${recoveryFileNamePreFix}.json`,
     );
     showAlert(
       '',
       t('onBoarding:json_file_has_been_stored_to_folder', {
-        fileNumber: 1,
-        folderName:
-          Platform.OS === 'ios'
-            ? t('onBoarding:app_document')
-            : t('onBoarding:app_download'),
+        fileName: recoveryFileNamePreFix,
+        folderName: t('onBoarding:app_document'),
       }),
       t('common:ok'),
       onOkPress,
@@ -93,78 +108,115 @@ export default function BackUpWalletUsingDevice() {
       <View style={Common.containerFillWithSmallHPadding}>
         <BackgroundView
           image={Images.background.ic_device_backup_bg}
-          bottom={-bottomTitleHeight}
+          bottom={-(bottomTitleHeight + 50)}
         />
       </View>
-      <BottomViewTitleAndSubTitle
-        onLayout={event => {
-          setBottomTitleHeight(event.nativeEvent.layout.height);
-        }}
-        title={t('common:Device')}
-        subTitle={t('common:BackUpRestoreWalletUsingDevice_description')}
-        middleView={
-          <>
-            <HorizontalSeparatorView spacing={Variables.MetricsSizes.tiny} />
-            <TitleDescriptionView title={`${recoveryFileNamePreFix}1.json`} />
-            <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
 
-            <View style={Layout.row}>
-              <ProgressLineView countLength={4} selectedCount={3} />
-              <VerticalSeparatorView spacing={Variables.MetricsSizes.large} />
-              <Button
-                text={t('common:Download')}
-                onPress={async () => {
-                  if (Platform.OS === 'android') {
-                    const fileData = await FileManagerService().readFile(
-                      FileRecoveryTempPath + `/${recoveryFileNamePreFix}1.json`,
-                      'utf8',
-                    );
+      <KeyboardAvoidingView
+        style={Layout.fill}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+        keyboardVerticalOffset={scale(Platform.OS === 'ios' ? -25 : 0)}
+      >
+        <View style={style(Layout).bottomView}>
+          <BottomViewTitleAndSubTitle
+            onLayout={event => {
+              setBottomTitleHeight(event.nativeEvent.layout.height);
+            }}
+            title={t('common:Device')}
+            subTitle={t('common:BackUpRestoreWalletUsingDevice_description')}
+            middleView={
+              <>
+                <HorizontalSeparatorView
+                  spacing={Variables.MetricsSizes.tiny}
+                />
+                <TitleDescriptionView
+                  isTitleEditable
+                  title={`${recoveryFileNamePreFix}.json`}
+                  onTextChange={setRecoveryFileNamePreFix}
+                />
+                <HorizontalSeparatorView
+                  spacing={Variables.MetricsSizes.medium}
+                />
 
-                    try {
-                      await FileManagerService().createFileInDownloadInAndroid(
-                        `${recoveryFileNamePreFix}1.json`,
-                        fileData,
-                      );
-                      showAlert(
-                        '',
-                        t('onBoarding:json_file_has_been_stored_to_folder', {
-                          fileNumber: 1,
-                          folderName: t('onBoarding:app_document'),
-                        }),
-                        t('common:ok'),
-                        onOkPress,
-                      );
-                    } catch (errorCode) {
-                      switch (errorCode) {
-                        case 102:
+                <View style={Layout.row}>
+                  <ProgressLineView countLength={4} selectedCount={3} />
+                  <VerticalSeparatorView
+                    spacing={Variables.MetricsSizes.large}
+                  />
+                  <Button
+                    text={t('common:Download')}
+                    onPress={async () => {
+                      if (Platform.OS === 'android') {
+                        const fileData = await FileManagerService().readFile(
+                          FileRecoveryTempPath +
+                            `/${tempRecoveryFileNamePreFix}1.json`,
+                          'utf8',
+                        );
+
+                        try {
+                          await FileManagerService().createFileInDownloadInAndroid(
+                            `${recoveryFileNamePreFix}.json`,
+                            fileData,
+                          );
                           showAlert(
                             '',
-                            t('onBoarding:delete_json_file_error_message'),
+                            t(
+                              'onBoarding:json_file_has_been_stored_to_folder',
+                              {
+                                fileName: recoveryFileNamePreFix,
+                                folderName: t('onBoarding:app_document'),
+                              },
+                            ),
                             t('common:ok'),
+                            onOkPress,
                           );
-                          break;
-                        case 103:
-                          showAlert(
-                            '',
-                            t('common:something_went_wrong_please_try_again'),
-                            t('common:ok'),
-                          );
-                          break;
-                        case 104:
-                          requestPermission();
-                          return;
+                        } catch (errorCode) {
+                          switch (errorCode) {
+                            case 102:
+                              showAlert(
+                                '',
+                                t('onBoarding:delete_json_file_error_message', {
+                                  fileName: recoveryFileNamePreFix,
+                                }),
+                                t('common:ok'),
+                              );
+                              break;
+                            case 103:
+                              showAlert(
+                                '',
+                                t(
+                                  'common:something_went_wrong_please_try_again',
+                                ),
+                                t('common:ok'),
+                              );
+                              break;
+                            case 104:
+                              requestPermission();
+                              return;
+                          }
+                        }
+                      } else {
+                        copyFile();
                       }
+                    }}
+                    btnStyle={Layout.fill}
+                    colors={
+                      !recoveryFileNamePreFix?.length &&
+                      Colors.disableGradientColor
                     }
-                  } else {
-                    moveFile();
-                  }
-                }}
-                btnStyle={Layout.fill}
-              />
-            </View>
-          </>
-        }
-      />
+                    btnTextColor={
+                      !recoveryFileNamePreFix?.length
+                        ? Colors.buttonGrayText
+                        : Colors.white
+                    }
+                    disabled={!recoveryFileNamePreFix?.length}
+                  />
+                </View>
+              </>
+            }
+          />
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }

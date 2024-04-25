@@ -5,6 +5,7 @@
  * That allows to change them more easily later on.
  */
 import { ThemeNavigationColors } from '../../@types/theme';
+import { applyOpacityToHexColor } from './Helper/ColorUtils';
 
 /**
  * Colors
@@ -35,11 +36,16 @@ export const Colors = {
   blackGray: '#2C2C2E',
   border: '#545458',
   darkPink: '#F63190',
-  primaryGradientColor: ['#F63190', '#8927C6', '#95CEE7'],
+  primaryGradientColor: ['#F63190', '#C76AF5', '#8927C6'],
   primaryReversGradientColor: ['#44427D', '#F63190', '#DA8FFF'],
   bottomButtonBG: '#767680',
   buttonGrayText: '#EBEBF54D',
   bgError: '#FF6161',
+  disableGradientColor: [
+    applyOpacityToHexColor('#787880', 0.3),
+    applyOpacityToHexColor('#787880', 0.3),
+  ],
+  switchGradientColor: ['#F63190', '#8927C6', '#95CEE7'],
 };
 
 export const NavigationColors: Partial<ThemeNavigationColors> = {

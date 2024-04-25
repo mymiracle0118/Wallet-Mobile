@@ -169,7 +169,6 @@ const SwapReview = () => {
           onPress={() => {
             navigation.navigate(ScreenNames.SwapActivity);
           }}
-          backGroundColor={Colors.primary}
           btnStyle={style(Gutters, Layout).swapBtn}
           btnTextColor={Colors.white}
         />

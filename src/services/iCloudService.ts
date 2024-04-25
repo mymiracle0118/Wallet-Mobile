@@ -2,6 +2,7 @@ import {
   createDir,
   defaultICloudContainerPath,
   exist,
+  getDefaultICloudContainerPath,
   readFile,
   unlink,
   upload,
@@ -11,14 +12,14 @@ import { t } from 'i18next';
 import { showToast } from 'theme/Helper/common/Function';
 import {
   documentFolderName,
-  recoveryFileNamePreFix,
+  tempRecoveryFileNamePreFix,
 } from 'theme/Helper/constant';
 
 const iCloudService = () => {
   const getFilePath = async () => {
     return (
       defaultICloudContainerPath +
-      `/${documentFolderName}/${recoveryFileNamePreFix}0.json`
+      `/${documentFolderName}/${tempRecoveryFileNamePreFix}0.json`
     );
   };
 
@@ -26,21 +27,34 @@ const iCloudService = () => {
     await unlink(folderPath);
   };
 
+  const getICloudPath = async () => {
+    return await getDefaultICloudContainerPath();
+  };
+
   const uploadToiCloud = async (localPath: string, fileName: string) => {
+    const icloudPath = await getICloudPath();
     try {
-      await createDir(defaultICloudContainerPath + `/${documentFolderName}/`);
+      try {
+        await createDir(icloudPath + `/${documentFolderName}/`);
+      } catch (error) {
+        throw 'create dir error!';
+      }
       const isFileExists = await exist(
-        defaultICloudContainerPath + `/${documentFolderName}/` + fileName,
+        icloudPath + `/${documentFolderName}/` + fileName,
       );
       if (isFileExists) {
         await deleteiCloudFolderOrFile(
-          defaultICloudContainerPath + `/${documentFolderName}/` + fileName,
+          icloudPath + `/${documentFolderName}/` + fileName,
         );
       }
-      await upload(
-        localPath,
-        defaultICloudContainerPath + `/${documentFolderName}/` + fileName,
-      );
+      try {
+        await upload(
+          localPath,
+          icloudPath + `/${documentFolderName}/` + fileName,
+        );
+      } catch (error) {
+        throw 'Upload file error!';
+      }
     } catch (e) {
       console.error('e', e);
     }

@@ -7,6 +7,7 @@ import {
 } from '@solana/spl-token';
 import solanaWeb3, {
   AccountInfo,
+  ComputeBudgetProgram,
   Connection,
   Keypair,
   LAMPORTS_PER_SOL,
@@ -20,6 +21,7 @@ import { useAxios } from 'customHooks/axiosHelper';
 import { HDKey } from 'ed25519-keygen/hdkey';
 import { encodeBase58 } from 'ethers';
 import { t } from 'i18next';
+import { store } from 'store/index';
 import {
   findValueByKey,
   getWalletAddress,
@@ -103,6 +105,7 @@ const SolanaService = () => {
     if (solanaConnectionObject?.rpcEndpoint !== url) {
       solanaConnectionObject = new Connection(url, {
         wsEndpoint: url?.replace('https', 'wss'),
+        commitment: 'confirmed',
       });
     }
     return solanaConnectionObject;
@@ -175,8 +178,6 @@ const SolanaService = () => {
           `---Event Notification for ${ACCOUNT_TO_WATCH.toString()}--- \nNew Account Balance: ${JSON.stringify(
             updatedAccountInfo,
           )}`,
-          updatedMintBalance,
-          tokenObj.shortName,
         );
       },
       'finalized',
@@ -250,7 +251,7 @@ const SolanaService = () => {
   const sendNativeToken = async (
     toAddress: string,
     amount: string,
-    _gasPrice: number,
+    gasPrice: number,
     _gasLimit: number,
     onTransactionRequest: (request?: {}) => void,
     onTransactionDone: (transaction: {}) => void,
@@ -278,11 +279,14 @@ const SolanaService = () => {
       transaction.feePayer = fromPubkey;
       transaction.recentBlockhash = recentBlockhash.blockhash;
       const fees = await transaction.getEstimatedFee(connection);
-
+      const PRIORITY_GAS_PRICE = gasPrice - (fees ?? 0);
+      const PRIORITY_FEE_IX = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: PRIORITY_GAS_PRICE,
+      });
       onTransactionRequest({
         gasPrice: fees,
       });
-      transaction.add(sendSolInstruction);
+      transaction.add(PRIORITY_FEE_IX).add(sendSolInstruction);
 
       const signer = await WalletSigner().signWallet(tokenObj);
 
@@ -316,6 +320,7 @@ const SolanaService = () => {
    * @returns A promise that resolves to the Solana token list response content.
    */
   const getCustomTokenInformation = async (
+    contractAddress: string,
     tokenObj: Pick<
       ExistingNetworksItem,
       | 'providerNetworkRPC_URL'
@@ -324,25 +329,32 @@ const SolanaService = () => {
       | 'networkName'
     >,
   ): Promise<SolanaTokenListResponseContent> => {
-    const parsedResponse = await fetchTokenInfo(tokenObj);
-    const balance = await getSingleSolanaCustomTokenBalance(tokenObj);
+    const tempTokenObj = {
+      ...tokenObj,
+      tokenContractAddress: contractAddress,
+    };
+    const parsedResponse = await fetchTokenInfo(tempTokenObj);
+    const balance = await getSingleSolanaCustomTokenBalance(tempTokenObj);
     return {
       ...parsedResponse.content[0],
-      balance: balance,
+      balance: balance ?? 0,
     };
   };
 
   const getSingleSolanaCustomTokenBalance = async (
-    item: ExistingNetworksItem,
+    tokenObj: Pick<
+      ExistingNetworksItem,
+      | 'providerNetworkRPC_URL'
+      | 'tokenContractAddress'
+      | 'providerNetworkRPC_Network_Name'
+      | 'networkName'
+    >,
   ) => {
     try {
-      const walletAddress = getWalletAddress(
-        item?.networkName,
-        item?.isEVMNetwork,
-      );
+      const walletAddress = getWalletAddress(tokenObj?.networkName, false);
       const ownerAccount = new PublicKey(walletAddress);
-      const tokenAccount = new PublicKey(item?.tokenContractAddress);
-      const connection = getProvider(item);
+      const tokenAccount = new PublicKey(tokenObj?.tokenContractAddress);
+      const connection = getProvider(tokenObj);
       const info = await connection.getParsedTokenAccountsByOwner(
         ownerAccount,
         {
@@ -452,11 +464,22 @@ const SolanaService = () => {
 
       const tx = new Transaction();
 
-      const { decimals } = await getSolanaCustomTokenDetails(tokenObj);
+      const { decimals } = await getCustomTokenInformation(
+        tokenObj.tokenContractAddress,
+        tokenObj,
+      );
 
       const mintPubkey = new PublicKey(tokenObj.tokenContractAddress);
+      tx.feePayer = FROM_KEYPAIR.publicKey;
+      const recentBlockhash = await connection.getLatestBlockhash();
+      tx.recentBlockhash = recentBlockhash.blockhash;
+      const fees = await tx.getEstimatedFee(connection);
+      const PRIORITY_GAS_PRICE = gasPrice - (fees ?? 0);
+      const PRIORITY_FEE_IX = ComputeBudgetProgram.setComputeUnitPrice({
+        microLamports: PRIORITY_GAS_PRICE,
+      });
 
-      tx.add(
+      tx.add(PRIORITY_FEE_IX).add(
         createTransferCheckedInstruction(
           sourceAccount.address,
           mintPubkey,
@@ -466,10 +489,6 @@ const SolanaService = () => {
           decimals,
         ),
       );
-
-      const recentBlockhash = await connection.getLatestBlockhash();
-
-      tx.recentBlockhash = recentBlockhash.blockhash;
 
       onTransactionRequest({ gasPrice: 0 });
 
@@ -481,7 +500,7 @@ const SolanaService = () => {
 
       if (confirmedTransaction) {
         onTransactionDone({
-          gasPrice: 0,
+          gasPrice: gasPrice,
           hash: confirmedTransaction,
           status: '1',
         });
@@ -634,8 +653,10 @@ const SolanaService = () => {
               obj?.meta?.postBalances?.length &&
               obj?.meta?.postBalances?.length > 0
             ) {
-              const instructionObj = obj?.transaction?.message?.instructions[0];
-
+              const instructionObj =
+                obj?.transaction?.message?.instructions?.filter(
+                  item => item?.parsed?.type === 'transfer',
+                )[0];
               const tx: ActivityItemInterface = {
                 blockHash: '',
                 blockNumber: '',
@@ -710,7 +731,14 @@ const SolanaService = () => {
               obj?.meta?.postTokenBalances?.length &&
               obj?.meta?.postTokenBalances?.length > 0
             ) {
-              const instructionObj = obj?.transaction?.message.instructions[0];
+              const instructionObj =
+                obj?.transaction?.message.instructions?.filter(
+                  item => item?.parsed?.type === 'transferChecked',
+                )[0];
+              const toAddress =
+                obj?.meta?.preTokenBalances?.filter(
+                  item => item.owner !== instructionObj?.info?.authority,
+                )[0]?.owner ?? instructionObj?.parsed?.info?.authority;
               const tx: ActivityItemInterface = {
                 blockHash: '',
                 blockNumber: '',
@@ -728,7 +756,7 @@ const SolanaService = () => {
                 methodId: '',
                 nonce: '',
                 timeStamp: obj?.blockTime?.toString() ?? '',
-                to: instructionObj?.parsed?.info?.destination ?? '',
+                to: toAddress,
                 transactionIndex: '',
                 txreceipt_status: '1',
                 value: Math.abs(
@@ -783,7 +811,9 @@ const SolanaService = () => {
           transaction?.meta?.postBalances?.length > 0
         ) {
           const instructionObj =
-            transaction?.transaction?.message.instructions[0];
+            transaction?.transaction?.message.instructions?.filter(
+              item => item?.parsed?.type === 'transfer',
+            )[0];
 
           const tx: ActivityItemInterface = {
             blockHash: '',
@@ -833,6 +863,10 @@ const SolanaService = () => {
       ) {
         try {
           const instructionObj = findValueByKey(transaction, 'parsed');
+          const toAddress =
+            transaction?.meta?.preTokenBalances?.filter(
+              item => item.owner !== instructionObj?.info?.authority,
+            )[0]?.owner ?? instructionObj?.info?.authority;
           const tx: ActivityItemInterface = {
             blockHash: '',
             blockNumber: '',
@@ -850,7 +884,7 @@ const SolanaService = () => {
             methodId: '',
             nonce: '',
             timeStamp: transaction?.blockTime?.toString() ?? '',
-            to: instructionObj?.info?.destination ?? '',
+            to: toAddress,
             transactionIndex: '',
             txreceipt_status: '1',
             value: Math.abs(

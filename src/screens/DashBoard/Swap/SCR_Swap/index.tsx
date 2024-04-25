@@ -367,11 +367,7 @@ const Swap: React.FC<any> = () => {
           onPress={() => {
             toggleDetails && navigation.navigate(ScreenNames.SwapReview);
           }}
-          backGroundColor={
-            toggleDetails
-              ? Colors.primary
-              : applyOpacityToHexColor(Colors.bottomButtonBG, 0.24)
-          }
+          colors={!toggleDetails && Colors.disableGradientColor}
           btnStyle={style(Gutters, Layout, Colors).reviewBtn}
           btnTextColor={
             toggleDetails

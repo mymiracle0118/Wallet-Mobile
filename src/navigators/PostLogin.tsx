@@ -8,6 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { TabBarIcon } from 'components/index';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
+import { run } from 'js-coroutines';
 import BalanceChangeObservers from 'services/BalanceChangeObservers';
 import USDConversionService from 'services/USDConversionService';
 import { getAllTokenBalanceAndStartObservers } from 'services/apiActions';
@@ -18,7 +19,6 @@ import { navigationRef } from 'theme/navigationHelper';
 
 import { ScreenNames } from '../theme';
 import SettingsTabStack from './SettingsTabStack';
-// import SwapTabStack from './SwapTabStack';
 import WalletTabStack from './WalletTabStack';
 
 const Tab = createBottomTabNavigator();
@@ -61,7 +61,7 @@ export const BottomTabs = () => {
     if (Object.keys(networks).length === 0) {
       dispatch(resetTotalBalance());
     }
-    startGetAllBalanceObservers();
+    run(startGetAllBalanceObservers);
   }, [shouldRefetchAllBalanceAndStartBalanceChangeObservers]);
 
   useEffect(() => {
@@ -87,12 +87,6 @@ export const BottomTabs = () => {
       appState.current.match(/inactive|background/) &&
       nextAppState === 'active'
     ) {
-      // console.log(
-      //   'new Date().getTime()??',
-      //   new Date().getTime(),
-      //   appStartTime,
-      //   autoLockTimer,
-      // );
       if (
         new Date().getTime() - appStartTime > autoLockTimer &&
         autoLockTimer !== 0

@@ -10,7 +10,6 @@ jest.mock('react-native-share', () => {
 });
 
 // Mocking react-native-share module
-// Mocking react-native-share module
 describe('ShareManagerService', function () {
   beforeEach(() => {
     jest.resetAllMocks();

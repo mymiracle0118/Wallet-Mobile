@@ -17,22 +17,20 @@ type Props = {
 };
 
 export default function MaskViewWithOverlay({ overlayText, onPress }: Props) {
-  const { Gutters, Layout, Images, Colors, Fonts } = useTheme();
+  const { Gutters, Layout, Images, Fonts } = useTheme();
 
   return (
     <TouchableOpacity
+      testID="mask_view"
       onPress={onPress}
-      style={style(Gutters, Layout, Colors).container}
+      style={style(Layout).container}
     >
       <ImageBackground
-        style={style(Gutters, Layout, Colors).maskImageBg}
+        style={style(Layout).maskImageBg}
         source={Images.ic_mask}
       />
-      <View style={style(Gutters, Layout, Colors).maskOverLayView}>
-        <Image
-          style={style(Gutters, Layout, Colors).image}
-          source={Images.ic_eye}
-        />
+      <View style={style(Layout).maskOverLayView}>
+        <Image style={style(Layout).image} source={Images.ic_eye} />
         <Text style={{ ...Fonts.textRegularBold, ...Gutters.tinyLMargin }}>
           {overlayText}
         </Text>

@@ -4,7 +4,6 @@ import {
   CardStyleInterpolators,
   createStackNavigator,
 } from '@react-navigation/stack';
-import CreateAccountRecoveryVideo from 'screens/Onboarding/SCR_CreateAccountRecoveryVideo';
 import {
   ActionComplete,
   BackUpFirstRecoveryPhrase,
@@ -22,12 +21,13 @@ import {
   FilesRecoveryLocationSelection,
   VerifyRecoveryPhrase,
   CreateAccountChooseRecoveryMethod,
-  CloudRecovery,
+  FileRecovery,
   BackUpWalletUsingIcloud,
   BackUpWalletUsingDevice,
   BackUpWalletUsingGuarantor,
   WelcomeBack,
   ChooseImportWalletMethod,
+  CreateAccountRecoveryVideo,
 } from 'screens/index';
 
 import { ScreenNames } from '../theme';
@@ -92,10 +92,7 @@ const PreLoginNavigator = () => {
         name={ScreenNames.DecryptFilePassword}
         component={DecryptFilePassword}
       />
-      <Stack.Screen
-        name={ScreenNames.CloudRecovery}
-        component={CloudRecovery}
-      />
+      <Stack.Screen name={ScreenNames.FileRecovery} component={FileRecovery} />
       <Stack.Screen
         name={ScreenNames.ChooseRecoveryMethod}
         component={ChooseRecoveryMethod}

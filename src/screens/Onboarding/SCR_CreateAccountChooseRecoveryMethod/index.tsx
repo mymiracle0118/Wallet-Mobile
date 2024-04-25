@@ -12,7 +12,6 @@ import {
 } from 'components/index';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
-import { generateRandomNumber } from 'theme/Helper/common/Function';
 import Variables from 'theme/Variables';
 import mockData from 'theme/mockData';
 import ScreenNames from 'theme/screenNames';
@@ -26,6 +25,14 @@ Redirect To CreatePassword Screen
 */
   const redirectToNextScreen = () => {
     navigation.navigate(ScreenNames.CreatePassword);
+  };
+
+  const redirectToBackUpFirstRecoveryPhraseScreen = () => {
+    navigation.navigate(ScreenNames.BackUpFirstRecoveryPhrase, {
+      isFromRevealSecretPhrase: false,
+      redirectFrom: ScreenNames.CreateAccountChooseRecoveryMethod,
+      userData: {},
+    });
   };
 
   return (
@@ -49,15 +56,13 @@ Redirect To CreatePassword Screen
                 redirectToNextScreen,
               });
             } else {
-              // Generate random numbers
-              const randomNumbers = generateRandomNumber(3);
-              let tempArray = [
-                { position: randomNumbers[0], value: '' },
-                { position: randomNumbers[1], value: '' },
-                { position: randomNumbers[2], value: '' },
-              ];
-              navigation.navigate(ScreenNames.VerifyRecoveryPhrase, {
-                randomPhrase: tempArray,
+              navigation.navigate(ScreenNames.RecoveryVideo, {
+                title: t('onBoarding:recoveryVideo_title'),
+                subTitle: t('onBoarding:recoveryVideo_subTitle'),
+                videoUrl:
+                  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                btnText: t('common:Next'),
+                redirectToNextScreen: redirectToBackUpFirstRecoveryPhraseScreen,
               });
             }
           }}

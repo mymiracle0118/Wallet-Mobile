@@ -45,7 +45,6 @@ export const style = (
       ...Gutters.smallLMargin,
     },
     deleteRootContainer: {
-      // ...Layout.fill,
       ...Layout.justifyContentCenter,
       ...Layout.alignItemsEnd,
     },

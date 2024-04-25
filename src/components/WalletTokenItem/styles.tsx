@@ -40,5 +40,10 @@ export const style = (
       height: 16,
       ...Gutters.tinyLMargin,
     },
+    viewAmount: {
+      ...Layout.alignItemsEnd,
+      ...Layout.justifyContentCenter,
+      ...Gutters.tinyLMargin,
+    },
   });
 };

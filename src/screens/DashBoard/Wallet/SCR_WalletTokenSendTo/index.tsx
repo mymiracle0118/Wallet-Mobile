@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Keyboard, ScrollView, Text, View } from 'react-native';
-import { openSettings } from 'react-native-permissions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import BigNumber from 'bignumber.js';
 import {
   AddToAddressBookView,
   BorderButton,
@@ -28,7 +28,6 @@ import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import AptosService from 'services/AptosService';
 import EthersService from 'services/EthersService';
-import PermissionService from 'services/PermissionService';
 import SuiService from 'services/SuiService';
 import SupraService from 'services/SupraService';
 import WalletAddressValidationService from 'services/WalletAddressValidationService';
@@ -40,13 +39,20 @@ import {
   USDollar,
   colorPalette,
   formatErc20Token,
+  getMinimumBalance,
   getRandomIndex,
   getRoundDecimalValue,
   getUserDataFromAddress,
+  getWalletAddress,
   showAlert,
   showConfirmationModal,
 } from 'theme/Helper/common/Function';
-import { ETHSCHEMA, NetWorkType, defaultNetwork } from 'theme/Helper/constant';
+import {
+  ETHSCHEMA,
+  NetWorkType,
+  NetWorkTypeId,
+  defaultNetwork,
+} from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import { ValidationSchema } from 'theme/index';
 import ScreenNames from 'theme/screenNames';
@@ -71,7 +77,7 @@ const WalletTokenSendTo: React.FC<any> = () => {
   const [isAddressValid, setIsAddressValid] = useState(false);
 
   const [shouldShowNext, setShouldShowNext] = useState(true);
-  const [isChecked, setIsChecked] = useState(false);
+  const [addToAddressIsChecked, setAddToAddressIsChecked] = useState(false);
   const [addressBookUsername, setAddressBookUsername] = useState('');
   const [selectedUser, setSelectedUser] = useState({});
 
@@ -93,9 +99,7 @@ const WalletTokenSendTo: React.FC<any> = () => {
     return currentTokenInfo?.tokenType === 'Native'
       ? currentTokenInfo
       : state.wallet.data.currentUserTokenArrayWithBalance[
-          currentTokenInfo?.networkName === 'Matic'
-            ? 'Polygon'
-            : currentTokenInfo?.networkName
+          currentTokenInfo?.networkName
         ];
   });
 
@@ -122,6 +126,26 @@ const WalletTokenSendTo: React.FC<any> = () => {
   });
 
   const [inWalletAddress, setInWalletAddress] = useState([]);
+
+  const callOk = () => {
+    callNextTransaction(getValues().address);
+  };
+
+  const onPressDismiss = () => {};
+
+  const popUpSameWalletAddressObj = {
+    isVisible: true,
+    popupTitle: t(
+      'wallet:it_looks_like_you_are_sending_tokens_to_the_same_address',
+    ),
+    popupDescription: t('wallet:do_you_wish_to_continue'),
+    buttonOkText: t('wallet:continue'),
+    okButtonType: 'primary',
+    buttonCancelText: t('common:cancel'),
+    onPressOk: callOk,
+    onPressCancel: onPressDismiss,
+    iconPath: Images.ic_cancel_transaction,
+  } as PopUpItem;
 
   useEffect(() => {
     getAllInWalletUserAddress();
@@ -187,6 +211,17 @@ const WalletTokenSendTo: React.FC<any> = () => {
     }
   };
 
+  const getGasMaxValue = useCallback(
+    (gasValue: number) => {
+      return [
+        parseFloat(new BigNumber(gasValue * 1)),
+        parseFloat(new BigNumber(gasValue * 1.5)),
+        parseFloat(new BigNumber(gasValue * 2)),
+      ];
+    },
+    [defaultGasFeeInGwei],
+  );
+
   const getAllInWalletUserAddress = () => {
     let userAddress = [];
     for (const userId in walletAddress) {
@@ -197,16 +232,25 @@ const WalletTokenSendTo: React.FC<any> = () => {
             ? defaultNetwork
             : currentTokenInfo?.networkName,
         ) &&
-        currentUserId !== userId
+        walletAddress[currentUserId][
+          currentTokenInfo?.isEVMNetwork
+            ? defaultNetwork
+            : currentTokenInfo?.networkName
+        ]?.address?.toLowerCase() !==
+          walletAddress[userId][
+            currentTokenInfo?.isEVMNetwork
+              ? defaultNetwork
+              : currentTokenInfo?.networkName
+          ]?.address?.toLowerCase()
       ) {
         const networkAddress =
           walletAddress[userId][
             currentTokenInfo?.isEVMNetwork
               ? defaultNetwork
               : currentTokenInfo?.networkName
-          ];
+          ].address;
 
-        const userProfileData = getUserDataFromAddress(networkAddress);
+        const userProfileData = getUserDataFromAddress(networkAddress, userId);
         userAddress.push({
           userName: userProfileData?.userName,
           address: networkAddress,
@@ -218,23 +262,27 @@ const WalletTokenSendTo: React.FC<any> = () => {
     setInWalletAddress(userAddress);
   };
 
+  const getCurrentUserWalletAddress = () => {
+    return getWalletAddress(
+      currentTokenInfo?.networkName,
+      currentTokenInfo?.isEVMNetwork,
+    );
+  };
+
   const setGasNetworkFeeAlongWithGasLimit = (feeData, gasPrice) => {
     let networkFees = 0;
     switch (currentTokenInfo?.networkName) {
       case NetWorkType.SUI:
+      case NetWorkType.SOL:
         networkFees = Number(
           formatErc20Token(gasPrice ? gasPrice : feeData?.gasPrice, 9),
         );
         break;
       case NetWorkType.APT:
         networkFees =
-          formatErc20Token(gasPrice ? gasPrice : feeData?.gasPrice, 8) *
-          Number(feeData?.gasUsed ?? '500');
-        break;
-      case NetWorkType.SOL:
-        networkFees = Number(
-          formatErc20Token(gasPrice ? gasPrice : feeData?.gasPrice, 9),
-        );
+          formatErc20Token(
+            parseInt(gasPrice ? gasPrice : feeData?.gasPrice, 8),
+          ) * Number(feeData?.gasUsed ?? '500');
         break;
       case NetWorkType.SUP:
         networkFees =
@@ -254,21 +302,38 @@ const WalletTokenSendTo: React.FC<any> = () => {
   };
 
   // Handle form submission
-  const onSubmit = async (_data: FormData) => {
+  const onSubmit = (_data: FormData) => {
     Keyboard.dismiss();
-    if (isChecked && !addressBookUsername?.trim()) {
+
+    if (
+      getCurrentUserWalletAddress().toLowerCase() ===
+      getValues().address.toLowerCase()
+    ) {
+      showConfirmationModal(popUpSameWalletAddressObj);
+      return;
+    }
+    callNextTransaction(_data.address);
+  };
+
+  const callNextTransaction = async (address: string) => {
+    if (addToAddressIsChecked && !addressBookUsername?.trim()) {
       return;
     }
     if (isAddressValid) {
-      if (isChecked && addressBookUsername?.trim()) {
-        addAddressInBook();
+      if (addToAddressIsChecked && addressBookUsername?.trim()) {
+        if (checkLabelNameIsExistInAddressInBook(addressBookUsername?.trim())) {
+          addAddressInBook();
+        } else {
+          showAlert('', t('setting:label_is_already_added'));
+          return;
+        }
       }
       setShouldShowNext(false);
 
       switch (currentTokenInfo?.networkName) {
         case NetWorkType.APT:
           const aptBalance = await AptosService().getOtherUserBalance(
-            _data.address,
+            address,
             currentTokenInfo,
           );
           if (aptBalance === '0') {
@@ -281,11 +346,18 @@ const WalletTokenSendTo: React.FC<any> = () => {
           }
           break;
         case NetWorkType.SUP:
+          const isAccountExist = await SupraService().checkAccountIsExist(
+            currentTokenInfo,
+            address,
+          );
+          if (!isAccountExist) {
+            setEstimatedGasFeeInGwei(defaultGasFeeInGwei * 1020);
+          }
+
           const supBalance = await SupraService().getOtherUserBalance(
-            _data.address,
+            address,
             currentTokenInfo,
           );
-          console.log('supBalance??>', supBalance);
           if (supBalance === '0') {
             showAlert(
               '',
@@ -297,7 +369,7 @@ const WalletTokenSendTo: React.FC<any> = () => {
           break;
         case NetWorkType.SUI:
           const balance = await SuiService().getBalance(
-            _data.address,
+            address,
             currentTokenInfo,
           );
           if (balance?.totalBalance === '0') {
@@ -310,6 +382,7 @@ const WalletTokenSendTo: React.FC<any> = () => {
     }
   };
 
+  // Check if the wallet address is valid using WalletAddressValidationService
   const callCheckAddress = async (address: string) => {
     let isCheckAddressValid =
       await WalletAddressValidationService().checkWalletAddressIsValidOrNot(
@@ -329,41 +402,36 @@ get wallet address
     callCheckAddress(newAddress);
   };
 
-  const handleScanQrCode = async () => {
-    const isPermissionGranted =
-      await PermissionService().requestCameraPermission();
-
-    if (isPermissionGranted) {
-      navigation.navigate(ScreenNames.WalletAddressScanner, {
-        getAddress,
-      });
-    } else {
-      showAlert(
-        '',
-        t('common:cameraAccess'),
-        t('common:open_settings'),
-        openSettings,
-        t('common:cancel'),
-      );
-    }
+  const openScanQrCode = () => {
+    navigation.navigate(ScreenNames.WalletAddressScanner, {
+      getAddress,
+    });
   };
 
   const isUserHasSufficientGasFees = () => {
     return !(estimatedGasFee > Number(nativeCurrencyToken?.amount));
   };
 
+  // Function to adjust the amount for gas fees
   const callAdjustForGas = () => {
+    // Set adjustedGas to true
     setAdjustedGas(true);
+
+    // Calculate the adjusted amount by subtracting gas fees and additional costs
     const calculatedAmount =
       Math.floor(
         (Number(currentTokenInfo?.amount) -
           estimatedGasFee -
           (0.1 * estimatedGasFee +
-            (currentTokenInfo?.networkName === 'SOL' ? 0.00089 : 0))) *
+            getMinimumBalance(currentTokenInfo?.networkName))) *
           1000000,
       ) / 1000000;
+
+    // Check if the calculated amount is greater than 0
     if (calculatedAmount > 0) {
+      // Check if the token type is not 'Native'
       if (currentTokenInfo?.tokenType !== 'Native') {
+        // If not 'Native', set the amount to the original amount
         setValue(
           'amount',
           Math.floor(Number(currentTokenInfo?.amount) * 1000000) / 1000000,
@@ -372,6 +440,7 @@ get wallet address
           },
         );
       } else {
+        // If 'Native', set the amount to the calculated amount
         setValue('amount', calculatedAmount, {
           shouldValidate: true,
         });
@@ -401,12 +470,14 @@ get wallet address
     iconPath: Images.ic_adjustGas,
   } as PopUpItem;
 
+  // Function to check Address Is Exists or not in address book
   const checkAddressIsExists = () => {
     return addressBookList.some(function (item) {
       return item?.address === getValues().address;
     });
   };
 
+  // Function to add a new address entry to the address book
   const addAddressInBook = () => {
     Keyboard.dismiss();
     let lastElement = addressBookList[addressBookList.length - 1]?.id ?? 0;
@@ -418,15 +489,26 @@ get wallet address
           address: getValues().address,
           shortName: currentTokenInfo?.isEVMNetwork
             ? defaultNetwork
-            : tokensList[currentTokenInfo?.networkName]?.networkName,
+            : currentTokenInfo?.networkName,
           networkName: currentTokenInfo?.isEVMNetwork
             ? tokensList[defaultNetwork]?.subTitle
-            : tokensList[currentTokenInfo?.networkName]?.subTitle,
+            : currentTokenInfo?.subTitle,
           isEVMNetwork: currentTokenInfo?.isEVMNetwork ? true : false,
           profileIcon: colorPalette[getRandomIndex(colorPalette.length)],
         },
       }),
     );
+  };
+
+  const checkLabelNameIsExistInAddressInBook = (label: string) => {
+    const checkUserName = obj =>
+      obj.userName.toLowerCase() === label.toLowerCase() &&
+      obj.shortName ===
+        (currentTokenInfo?.isEVMNetwork
+          ? defaultNetwork
+          : currentTokenInfo?.networkName);
+
+    return !addressBookList.some(checkUserName);
   };
 
   const selectedAddress = (
@@ -435,6 +517,7 @@ get wallet address
   ) => {
     if (isFromAddressBook) {
       setSelectedUser(item);
+      setAddToAddressIsChecked(false);
     } else {
       const userData = getUserDataFromAddress(item.address);
       if (userData?.userName) {
@@ -444,10 +527,10 @@ get wallet address
           address: item.address,
           shortName: currentTokenInfo?.isEVMNetwork
             ? defaultNetwork
-            : tokensList[currentTokenInfo?.networkName]?.networkName,
+            : currentTokenInfo?.networkName,
           networkName: currentTokenInfo?.isEVMNetwork
             ? tokensList[defaultNetwork]?.subTitle
-            : tokensList[currentTokenInfo?.networkName]?.subTitle,
+            : currentTokenInfo?.subTitle,
           isEVMNetwork: currentTokenInfo?.isEVMNetwork ? true : false,
           profileIcon: userData?.profileIcon,
         };
@@ -520,7 +603,7 @@ get wallet address
                   reset();
                   setIsAddressValid(false);
                   setShouldShowNext(true);
-                  setIsChecked(false);
+                  setAddToAddressIsChecked(false);
                 }}
               />
             </View>
@@ -548,9 +631,9 @@ get wallet address
                         reset();
                         setIsAddressValid(false);
                         setShouldShowNext(true);
-                        setIsChecked(false);
+                        setAddToAddressIsChecked(false);
                       } else {
-                        handleScanQrCode();
+                        openScanQrCode();
                       }
                     }}
                     onChangeValue={prop => {
@@ -595,8 +678,8 @@ get wallet address
                 />
 
                 <AddToAddressBookView
-                  isChecked={isChecked}
-                  setIsChecked={setIsChecked}
+                  isChecked={addToAddressIsChecked}
+                  setIsChecked={setAddToAddressIsChecked}
                   setAddressBookUsername={setAddressBookUsername}
                 />
               </>
@@ -614,7 +697,7 @@ get wallet address
                 {Number(currentTokenInfo?.amount) >
                   0.000001 +
                     estimatedGasFee +
-                    (currentTokenInfo?.networkName === 'SOL' ? 0.00089 : 0) && (
+                    getMinimumBalance(currentTokenInfo?.networkName) && (
                   <BorderButton
                     text={t('common:max')}
                     onPress={() => {
@@ -694,9 +777,10 @@ get wallet address
                             Fonts.textRight,
                           ]}
                         >
-                          {`Balance: ${Number(currentTokenInfo?.amount).toFixed(
-                            5,
-                          )} ${currentTokenInfo?.title}`}
+                          {`Balance: ${
+                            getRoundDecimalValue(currentTokenInfo?.amount) ??
+                            '0'
+                          } ${currentTokenInfo?.title}`}
                         </Text>
                       </View>
                     </View>
@@ -713,6 +797,7 @@ get wallet address
                             />
                             <GasPriceView
                               minValue={defaultGasFeeInGwei}
+                              values={getGasMaxValue(defaultGasFeeInGwei)}
                               amount={
                                 currentTokenInfo?.isEVMNetwork
                                   ? estimatedGasFee ?? '0'
@@ -735,18 +820,30 @@ get wallet address
                                       ? getValues()?.amount
                                       : 0,
                                   ) +
-                                  (currentTokenInfo?.networkName === 'SOL'
-                                    ? 0.00089
-                                    : 0) <
+                                  getMinimumBalance(
+                                    currentTokenInfo?.networkName,
+                                  ) <
                                 nativeCurrencyToken.amount
                                   ? ''
                                   : Colors.textError
                               }
                               setSliderValue={setEstimatedGasFeeInGwei}
                               sliderValue={
-                                currentTokenInfo?.isEVMNetwork && !adjustedGas
-                                  ? estimatedGasFeeInGwei
+                                (currentTokenInfo?.isEVMNetwork ||
+                                  currentTokenInfo?.networkId ===
+                                    NetWorkTypeId.APT ||
+                                  currentTokenInfo?.networkId ===
+                                    NetWorkTypeId.SOL ||
+                                  currentTokenInfo?.networkId ===
+                                    NetWorkTypeId.SUI) &&
+                                !adjustedGas
+                                  ? parseFloat(estimatedGasFeeInGwei)
                                   : undefined
+                              }
+                              gasUnit={
+                                nativeCurrencyToken?.tokenGasFeeUnitToDisplay
+                                  ? nativeCurrencyToken?.tokenGasFeeUnitToDisplay
+                                  : t('common:gwei')
                               }
                             />
 
@@ -756,9 +853,7 @@ get wallet address
                                   ? getValues()?.amount
                                   : 0,
                               ) +
-                              (currentTokenInfo?.networkName === 'SOL'
-                                ? 0.00089
-                                : 0) >
+                              getMinimumBalance(currentTokenInfo?.networkName) >
                               nativeCurrencyToken.amount && (
                               <ErrorView
                                 text={t('swap:insufficient_gas_fee')}
@@ -789,7 +884,10 @@ get wallet address
                                   (currentTokenInfo?.tokenType === 'Native'
                                     ? Number(getValues().amount)
                                     : 0) +
-                                    estimatedGasFee >
+                                    estimatedGasFee +
+                                    getMinimumBalance(
+                                      currentTokenInfo?.networkName,
+                                    ) >
                                   Number(currentTokenInfo?.amount)
                                 ) {
                                   showAlert(
@@ -837,13 +935,14 @@ get wallet address
               <Button
                 text={t('common:Next')}
                 onPress={handleSubmit(onSubmit)}
-                backGroundColor={
-                  (isChecked && !addressBookUsername?.trim()) || !isAddressValid
-                    ? applyOpacityToHexColor(Colors.switchBGColor, 0.3)
-                    : Colors.primary
+                colors={
+                  ((addToAddressIsChecked && !addressBookUsername?.trim()) ||
+                    !isAddressValid) &&
+                  Colors.disableGradientColor
                 }
                 btnTextColor={
-                  (isChecked && !addressBookUsername?.trim()) || !isAddressValid
+                  (addToAddressIsChecked && !addressBookUsername?.trim()) ||
+                  !isAddressValid
                     ? Colors.buttonGrayText
                     : Colors.white
                 }

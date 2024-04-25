@@ -6,11 +6,10 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { FadeAnimationRef } from 'components/FadeAnimation/types';
+import { FadeAnimationRef } from 'components/FadeAnimation/FadeAnimation.types';
 import { TokenListHandleType } from 'components/TokensListView/TokensListView.types';
 import {
   BackgroundView,
-  Button,
   DashBoardHeader,
   TokensListView,
   BottomSheetWrapper,
@@ -19,17 +18,14 @@ import {
   SafeAreaWrapper,
   HorizontalSeparatorView,
   FadeAnimation,
+  BorderButton,
 } from 'components/index';
 import useUpdateEffect from 'customHooks/useUpdateEffect';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import { RootState } from 'store/index';
 import { setCurrentSelectedTokenById } from 'store/wallet';
-import {
-  USDollar,
-  getWalletAddress,
-  showNotificationList,
-} from 'theme/Helper/common/Function';
+import { USDollar, getWalletAddress } from 'theme/Helper/common/Function';
 import { DeviceMetrics } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import mockData from 'theme/mockData';
@@ -121,13 +117,6 @@ const Wallet = () => {
     [],
   );
 
-  const handleOnClickNotification = () => {
-    const dataObj = {
-      isVisible: true,
-    };
-    showNotificationList(dataObj);
-  };
-
   return (
     <SafeAreaWrapper>
       <>
@@ -147,14 +136,12 @@ const Wallet = () => {
         <DashBoardHeader
           testID="Wallet_DashBoardHeader"
           containerStyle={Common.smallHPadding}
-          leftImage={Images.ic_bell}
           rightImage={
             userInfo.currentUser?.profileIcon
               ? userInfo.currentUser?.profileIcon
               : undefined
           }
           userName={userInfo.currentUser.userName}
-          onPressLeftImage={handleOnClickNotification}
         />
       </View>
 
@@ -204,7 +191,6 @@ const Wallet = () => {
               setOpenSortingBottomSheet(true);
             }}
             onPressRedirect={async (item: ExistingNetworksItem) => {
-              console.log(item);
               await dispatch(
                 setCurrentSelectedTokenById({
                   tokenId: item.shortName,
@@ -217,7 +203,7 @@ const Wallet = () => {
           />
         </BottomSheetWrapper>
 
-        <Button
+        <BorderButton
           btnStyle={
             parseInt(totalValue || '0', 10) === 0
               ? style(Gutters, Layout, Colors).bottomButton
@@ -227,10 +213,10 @@ const Wallet = () => {
           onPress={() => {
             navigation.navigate(ScreenNames.AddToken);
           }}
-          btnTextColor={
+          textStyle={
             parseInt(totalValue || '0', 10) === 0
-              ? Colors.white
-              : Colors.textPurple
+              ? style(Gutters, Layout, Colors).btnTextWithWhiteColor
+              : style(Gutters, Layout, Colors).btnTextWithPurpleColor
           }
         />
 
@@ -240,7 +226,6 @@ const Wallet = () => {
           title={t('Sort_by')}
           onDonePress={item => {
             setOpenSortingBottomSheet(false);
-            console.log('item', item);
             refFilter?.current?.applySortFilter(item[0], 'sorting');
           }}
           onClearPress={() => {

@@ -56,7 +56,6 @@ export { default as RecoverySelectionListView } from './RecoverySelectionListVie
 export { default as TagView } from './TagView/TagView';
 export { default as TitleDescriptionView } from './TitleDescriptionView/TitleDescriptionView';
 export { default as FilePath } from './FilePath/FilePath';
-export { default as BackUpWalletOptionView } from './BackUpWalletOptionView/BackUpWalletOptionView';
 export { default as DivideByText } from './DivideByText/DivideByText';
 export { default as UserAddressView } from './UserAddressView/UserAddressView';
 export { default as GasPriceView } from './GasPriceView/GasPriceView';
@@ -71,7 +70,6 @@ export { default as ProgressLineView } from './ProgressLineView/ProgressLineView
 export { default as NodataActivityView } from './NodataActivityView/NodataActivityView';
 export { default as FooterLoader } from './FooterLoader/FooterLoader';
 export { default as NoInternetView } from './NoInternetView/NoInternetView';
-export { default as GasPriceAlertBottomSheetView } from './GasPriceAlertBottomSheetView/GasPriceAlertBottomSheetView';
 export { default as TabBar } from './TabBar/TabBar';
 export { default as AddTokenListView } from './AddTokenListView/AddTokenListView';
 export { default as UserProfileView } from './UserProfileView/UserProfileView';
@@ -93,3 +91,9 @@ export { default as FadeAnimation } from './FadeAnimation/FadeAnimation';
 export { default as ActivityIndicatorLoader } from './ActivityIndicatorLoader/ActivityIndicatorLoader';
 export { default as AvatarImageView } from './AvatarImageView/AvatarImageView';
 export { default as BorderWalletAddressView } from './BorderWalletAddressView/BorderWalletAddressView';
+export { default as Loader } from './Loader/Loader';
+export { default as TimerRawItem } from './TimerRawItem/TimerRawItem';
+export { default as TokenPriceView } from './TokenPriceView/TokenPriceView';
+export { default as GestureHandlerHoc } from './GestureHandlerHoc/GestureHandlerHoc';
+export { default as BarcodeMask } from './BarcodeMask/BarcodeMask';
+export { default as AddressView } from './AddressView/AddressView';

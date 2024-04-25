@@ -9,6 +9,7 @@ import { formatAddress } from 'theme/Helper/Address';
 import { getWalletAddress } from 'theme/Helper/common/Function';
 import { ExistingNetworksItem } from 'types/apiResponseInterfaces';
 
+import { AddressView } from '..';
 import { style } from './styles';
 
 type NetworkFilterProps = {
@@ -44,14 +45,16 @@ const NetworkFilterRawItem = (props: NetworkFilterProps) => {
           {item?.subTitle}
         </Text>
         {getWalletAddress(item?.networkName, item?.isEVMNetwork) ? (
-          <View style={style(Gutters, Layout, Colors).addressContainer}>
-            <Text style={Fonts.textSmallTinyWhiteBold} numberOfLines={1}>
-              {formatAddress(
-                getWalletAddress(item?.networkName, item?.isEVMNetwork),
-                'short',
-              )}
-            </Text>
-          </View>
+          <AddressView
+            text={formatAddress(
+              getWalletAddress(item?.networkName, item?.isEVMNetwork),
+              'short',
+            )}
+            walletAddress={getWalletAddress(
+              item?.networkName,
+              item?.isEVMNetwork,
+            )}
+          />
         ) : (
           <Pressable
             style={style(Gutters, Layout, Colors).addressContainer}

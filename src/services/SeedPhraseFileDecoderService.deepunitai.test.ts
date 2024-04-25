@@ -9,10 +9,6 @@ jest.mock('./EncryptionService');
 // Mocking the modules
 jest.mock('algorithms/reedSolomonErasure.js');
 
-// Mocking the modules
-
-// Mocking the imported modules
-
 // Mocking the imported modules
 describe('SeedPhraseFileDecoderService', function () {
   beforeEach(() => {

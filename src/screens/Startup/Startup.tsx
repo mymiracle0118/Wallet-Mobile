@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
-import i18next, { t } from 'i18next';
+import i18next from 'i18next';
 import BiometricService from 'services/BiometricService';
 import { RootState } from 'store/index';
 
@@ -17,7 +17,7 @@ import { setDefaultTheme } from '../../store/theme';
 import { style } from './style';
 
 const Startup = ({ navigation }: ApplicationScreenProps) => {
-  const { Images, Gutters, Layout, Fonts } = useTheme();
+  const { Images, Gutters, Layout } = useTheme();
   const isFaceIdEnabled = useSelector(
     (state: RootState) => state.userInfo.data.config?.isFaceIdEnabled,
   );
@@ -59,22 +59,18 @@ const Startup = ({ navigation }: ApplicationScreenProps) => {
 
   return (
     <SafeAreaWrapper applyToOnlyTopEdge={false}>
-      <BackgroundView image={Images.background.ic_backgroundGradientLayer} />
+      <BackgroundView image={Images.background.ic_bg_welcome} />
       <View style={style(Gutters, Layout).subView}>
         <Image
           testID={'brand-img'}
           style={[Layout.fullSize, style(Gutters, Layout).icon]}
           source={Images.ic_appLogo}
         />
-        <Text
-          style={[
-            Fonts.titleExtraLarge,
-            Fonts.textCenter,
-            style(Gutters, Layout).titleStyle,
-          ]}
-        >
-          {t('onBoarding:welcome_subTitle').toUpperCase()}
-        </Text>
+        <Image
+          style={style(Gutters, Layout).appNameImg}
+          source={Images.ic_app_name}
+          resizeMode="contain"
+        />
         <HorizontalSeparatorView spacing={16} />
         {isFaceIdEnabled && (
           <Pressable onPress={init}>

@@ -6,12 +6,11 @@ import {
 } from '@robinbobin/react-native-google-drive-api-wrapper';
 import { t } from 'i18next';
 import { showAlert, showToast } from 'theme/Helper/common/Function';
+import { ROOT_FOLDER_NAME } from 'theme/Helper/constant';
 
-import app from '../../app.json';
 import FileManagerService from './FileManagerService';
 
 const ROOT_FOLDER_ID = 'root';
-const SHUTTLE_FOLDER_NAME = `DO NOT DELETE ${app.displayName}`;
 
 const gDriveAccessScopes = [
   'https://www.googleapis.com/auth/drive',
@@ -20,7 +19,6 @@ const gDriveAccessScopes = [
 ];
 
 const gdrive = new GDrive();
-// gdrive.accessToken = null;
 
 export const config = async () => {
   GoogleSignin.configure({
@@ -31,13 +29,9 @@ export const config = async () => {
 };
 
 export const createFolder = async (folderName: string) => {
-  const rootFolder = await retrieveSafeGuardFolderObject(
-    gdrive,
-    ROOT_FOLDER_ID,
-  );
+  const rootFolder = await retrieveSafeGuardFolderObject();
   // Check if the folder already exists
   if (rootFolder?.files?.length > 0) {
-    await deleteFiles();
     return;
   }
   // Create the folder
@@ -52,11 +46,8 @@ export const createFolder = async (folderName: string) => {
 };
 
 export const createFiles = async (localPath: string, fileName: string) => {
-  await createFolder(SHUTTLE_FOLDER_NAME);
-  const rootFolder = await retrieveSafeGuardFolderObject(
-    gdrive,
-    ROOT_FOLDER_ID,
-  );
+  await createFolder(ROOT_FOLDER_NAME);
+  const rootFolder = await retrieveSafeGuardFolderObject();
 
   const data = await FileManagerService().readFile(localPath, 'utf8');
   const uploadedFile = await gdrive.files
@@ -70,23 +61,9 @@ export const createFiles = async (localPath: string, fileName: string) => {
   console.log('Done!', uploadedFile);
 };
 
-export const deleteFiles = async () => {
-  const folderData = await retrieveSafeGuardFolderObject();
-  //folder does not exist so no need to delete files
-  if (folderData?.files?.length === 0) {
-    return;
-  }
-  const folderId = folderData?.files[0].id;
-  const res = await retrieveFilesInFolderById(folderId);
-  for (const item of res.files) {
-    gdrive.files.delete(item?.id);
-  }
-};
-
 export const readFiles = async () => {
   try {
     const folderData = await retrieveSafeGuardFolderObject();
-    console.log('folderData', folderData);
     if (folderData?.files?.length === 0) {
       throw new Error(t('common:Recovery_Folder_does_not_exist'));
     }
@@ -105,6 +82,7 @@ export const readFiles = async () => {
 export const loginWithGoogle = async () => {
   const isUserAlreadyLoggedIn = await GoogleSignin.isSignedIn();
   if (isUserAlreadyLoggedIn) {
+    // TODO: document why this block is empty
   } else {
     //Try signInSilently options first if got error then show account selection option to user show user can select account
     try {
@@ -134,6 +112,8 @@ export const retrieveSafeGuardFolderObject = async () => {
     q: new ListQueryBuilder()
       .in(ROOT_FOLDER_ID, 'parents')
       .and()
-      .e('name', SHUTTLE_FOLDER_NAME),
+      .e('name', ROOT_FOLDER_NAME)
+      .and()
+      .e('trashed', false),
   });
 };

@@ -4,13 +4,10 @@ import getStyleSheet from 'theme/Helper/currentStyleSheet';
 export const style = (Gutters: typeof gutters) => {
   return getStyleSheet().create({
     rootContainer: { marginTop: -80 },
-    title: {
-      ...Gutters.tinyTMargin,
-    },
-    subTitle: {
-      ...Gutters.extraTinyTMargin,
-      ...Gutters.smallBMargin,
-      letterSpacing: 7,
+    appNameImg: {
+      height: 32,
+      width: 200,
+      ...Gutters.tinyMediumMargin,
     },
   });
 };

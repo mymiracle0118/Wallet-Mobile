@@ -10,7 +10,7 @@ import {
   updateNetworkEnvironment,
   triggerFetchAllTokenBalanceAndStartObservers,
   updateIsWalletFromSeedPhase,
-  hideUserData,
+  hideUserTokenData,
 } from 'store/wallet';
 import { EnvironmentType } from 'types/apiResponseInterfaces';
 import {
@@ -51,6 +51,7 @@ const StoreUpdateReduxWalletStateService = () => {
     item: TokenBalanceFormatted[],
   ) => {
     let data;
+    // deepcode ignore UsageOfUninitializedVariable
     if (JSON.stringify(item) === JSON.stringify(data)) {
       return;
     }
@@ -61,8 +62,11 @@ const StoreUpdateReduxWalletStateService = () => {
   const updateWalletAddressInStore = async (
     walletAddress: string,
     networkName: string,
+    derivationIndex: string = '0',
   ) => {
-    store.dispatch(updateWalletAddress({ walletAddress, networkName }));
+    store.dispatch(
+      updateWalletAddress({ walletAddress, networkName, derivationIndex }),
+    );
   };
 
   const updateSeedPhraseInStore = async (seed: string) => {
@@ -132,7 +136,7 @@ const StoreUpdateReduxWalletStateService = () => {
       }),
     );
     store.dispatch(
-      hideUserData({
+      hideUserTokenData({
         removeUserId: userID,
       }),
     );

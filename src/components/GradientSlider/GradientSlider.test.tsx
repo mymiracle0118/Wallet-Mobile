@@ -6,11 +6,20 @@ import { store } from 'store/index';
 
 import GradientSlider from './GradientSlider';
 
-test('render correctly', () => {
-  const componentCase1 = (
-    <Provider store={store}>
-      <GradientSlider sliderValue={5} setSliderValue={jest.fn} />
-    </Provider>
-  );
-  render(componentCase1);
+describe('GradientSlider', () => {
+  it('renders correctly', () => {
+    const mockProps = {
+      sliderValue: 20,
+      setSliderValue: jest.fn(),
+      minValue: 10,
+    };
+
+    const { getByTestId } = render(
+      <Provider store={store}>
+        <GradientSlider values={[]} {...mockProps} />
+      </Provider>,
+    );
+
+    expect(getByTestId).toBeTruthy();
+  });
 });

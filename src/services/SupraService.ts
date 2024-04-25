@@ -17,8 +17,6 @@ import { ActivityRequestType, GasFeeData } from 'types/applicationInterfaces';
 
 import WalletCommonService from './WalletCommonService';
 
-// import * as supraSDK from './supraL1/index';
-
 let cachedWallet: any;
 let cachedClient: supraSDK.SupraClient;
 
@@ -109,7 +107,7 @@ const SupraService = () => {
     if (cachedClient?.supraNodeURL !== url) {
       // If the URLs don't match, create a new AptosClient with the provided URL and cache it
       cachedClient = await supraSDK.SupraClient.init(
-        cachedClient?.supraNodeURL,
+        cachedClient?.supraNodeURL ?? url,
       );
     }
     return cachedClient;
@@ -134,12 +132,15 @@ const SupraService = () => {
   const getPrivateKey = async () => {
     let privateKey = '';
 
+    const { isWalletFromSeedPhase } =
+      store.getState().userInfo.data.currentUser;
+
     // Check if the wallet is from the seed phase
-    if (store.getState().userInfo.data.currentUser.isWalletFromSeedPhase) {
+    if (isWalletFromSeedPhase) {
       // If the wallet is from the seed phase, retrieve the private key using getWalletUsingSeed
       const account = await getWalletUsingSeed(
         store.getState().wallet.data.seedPhrase,
-        store.getState().userInfo.data.currentUser.derivationPathIndex,
+        WalletCommonService().getDerivationPathIndex(NetWorkType.SUP),
       );
       privateKey = account.privateKey;
     } else {
@@ -305,6 +306,33 @@ const SupraService = () => {
     }
   };
 
+  const collectTokenFromFaucet = async (
+    tokenObj: ExistingNetworksItem,
+  ): Promise<{ success: boolean; error?: any }> => {
+    try {
+      // Retrieve the provider using the provided token object
+      const client = await getProvider(tokenObj);
+
+      const walletAddress = getWalletAddress(
+        tokenObj.networkName,
+        tokenObj.isEVMNetwork,
+      );
+      const success = await client.fundAccountWithFaucet(
+        new HexString(walletAddress),
+      );
+      return {
+        success: success,
+        error: null,
+      };
+    } catch (error) {
+      // Log the error if it occurs and return data
+      throw {
+        success: false,
+        error: 'failed!',
+      };
+    }
+  };
+
   /**
    * Function to retrieve the token activity list for a specific wallet address.
    * @param {ActivityRequestType} - An object containing the wallet address, transaction type, page, and token information.
@@ -344,7 +372,8 @@ const SupraService = () => {
           isError: '',
           methodId: '',
           nonce: '',
-          timeStamp: obj?.txConfirmationTime / 1000,
+          timeStamp:
+            (Number(obj?.txConfirmationTime ?? 0) / 1000000)?.toString() ?? '',
           to: '0x' + obj?.receiver ?? '',
           transactionIndex: '',
           txreceipt_status: '1',
@@ -399,7 +428,10 @@ const SupraService = () => {
         isError: '',
         methodId: '',
         nonce: '',
-        timeStamp: parseInt(transactionInfo?.txConfirmationTime) / 1000 + '',
+        timeStamp:
+          (
+            Number(transactionInfo?.txConfirmationTime ?? 0) / 1000000
+          )?.toString() ?? '',
         to: '0x' + transactionInfo?.receiver ?? '',
         transactionIndex: '',
         txreceipt_status: '1',
@@ -429,6 +461,22 @@ const SupraService = () => {
   //TODO: this feature will be added later on.
   const getCustomTokenInformation = () => {};
 
+  const checkAccountIsExist = async (
+    tokenObj: ExistingNetworksItem,
+    walletAddress: string,
+  ) => {
+    try {
+      // Retrieve the provider using the provided token object
+      const client = await getProvider(tokenObj);
+      const isExists = await client.isAccountExists(
+        new HexString(walletAddress),
+      );
+      return isExists;
+    } catch (error) {
+      return false;
+    }
+  };
+
   return {
     getWalletUsingSeed,
     getBalance,
@@ -443,6 +491,8 @@ const SupraService = () => {
     getPrivateKeyUsingSeedPhrase,
     sendCustomToken,
     getCustomTokenInformation,
+    collectTokenFromFaucet,
+    checkAccountIsExist,
   };
 };
 

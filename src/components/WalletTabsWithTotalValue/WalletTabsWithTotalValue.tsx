@@ -6,17 +6,13 @@ import { formatAddress } from 'theme/Helper/Address';
 import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import Variables from 'theme/Variables';
 
-// import mockData from 'theme/mockData';
-import { BorderButton, BorderTextIconButton } from '..';
+import { AddressView, BorderTextIconButton } from '..';
 import { useTheme } from '../../hooks';
-// import CustomToggleButtons from '../CustomToggleButtons/CustomToggleButtons';
 import HorizontalSeparatorView from '../HorizontalSeparatorView/HorizontalSeparatorView';
 import { style } from './styles';
 
 type Props = {
   tokenAmount: string;
-  // selectedType: number;
-  // setSelectedType: (arg0: number) => void;
   onPressFilter: () => void;
   filterName: string;
   shouldShowBalance?: boolean;
@@ -25,8 +21,6 @@ type Props = {
 
 const WalletTabsWithTotalValue = ({
   tokenAmount,
-  // selectedType,
-  // setSelectedType,
   onPressFilter,
   filterName,
   shouldShowBalance,
@@ -35,7 +29,7 @@ const WalletTabsWithTotalValue = ({
   const { Layout, Fonts, Colors, Gutters, Images } = useTheme();
 
   return (
-    <View style={style(Gutters, Layout, Colors).container}>
+    <View style={style(Gutters, Colors).container}>
       <View style={Layout.row}>
         <View style={Layout.fill}>
           {!shouldShowBalance ? (
@@ -44,7 +38,7 @@ const WalletTabsWithTotalValue = ({
             </Text>
           ) : (
             <Image
-              style={style(Gutters, Layout, Colors).monkeyIconStyle}
+              style={style(Gutters, Colors).monkeyIconStyle}
               source={Images.ic_no_evil_monkey}
               resizeMode="contain"
             />
@@ -59,12 +53,6 @@ const WalletTabsWithTotalValue = ({
             {t('wallet:total_value')}
           </Text>
         </View>
-        {/* <CustomToggleButtons
-          toggleList={mockData.coinTypes}
-          selectedType={selectedType}
-          setSelectedType={setSelectedType}
-          toggleType="image"
-        /> */}
       </View>
       <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
 
@@ -73,16 +61,14 @@ const WalletTabsWithTotalValue = ({
           leftIconImage={Images.ic_network}
           text={filterName}
           onPress={onPressFilter}
-          btnStyle={style(Gutters, Layout, Colors).addressBtn}
+          btnStyle={style(Gutters, Colors).addressBtn}
           textStyle={Fonts.textSmallTinyWhiteMedium}
           rightIconImage={Images.ic_drop_down}
         />
         {walletAddress !== '' && (
-          <BorderButton
+          <AddressView
             text={formatAddress(walletAddress, 'short')}
-            onPress={onPressFilter}
-            btnStyle={style(Gutters, Layout, Colors).addressBtn}
-            textStyle={Fonts.textSmallTinyWhiteMedium}
+            walletAddress={walletAddress}
           />
         )}
       </View>

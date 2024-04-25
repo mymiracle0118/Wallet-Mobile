@@ -17,11 +17,11 @@ import {
 import useUpdateEffect from 'customHooks/useUpdateEffect';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
-import nextFrame from 'next-frame';
 import StoreUpdateReduxWalletStateService from 'services/StoreUpdateReduxWalletStateService';
 import SupraService from 'services/SupraService';
 import WalletCommonService from 'services/WalletCommonService';
 import { AppDispatch, RootState } from 'store/index';
+import { updateLoader } from 'store/loader';
 import {
   editUserData,
   updateCreateUser,
@@ -31,11 +31,9 @@ import {
 } from 'store/userInfo';
 import {
   addRemoveTokenFromList,
-  triggerFetchAllTokenBalanceAndStartObservers,
   updateCurrentUserNetworkList,
   updateSelectedNetworkFilter,
 } from 'store/wallet';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import {
   colorPalette,
   generateRandomString,
@@ -46,6 +44,7 @@ import {
   MaximumUsernameCharacters,
   MinimumUsernameCharacters,
   NetWorkType,
+  defaultNetwork,
 } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import { ScreenNames, ValidationSchema } from 'theme/index';
@@ -81,17 +80,11 @@ const CreateEditImportAccount = () => {
     return state.wallet.data.tokensList;
   });
 
-  const [imgIcon, setImgIcon] = useState(
-    colorPalette[getRandomIndex(colorPalette.length)],
-  );
+  const [imgIcon, setImgIcon] = useState<String[] | string>();
 
-  const [derivationIndex, setDerivationIndex] = useState(0);
+  const [derivationIndex, setDerivationIndex] = useState('0');
 
   const [userId] = useState(generateRandomString(5));
-
-  const walletAddressList = useSelector((state: RootState) => {
-    return state.wallet.data.walletAddress;
-  });
 
   // Set up react-hook-form
   const {
@@ -112,8 +105,14 @@ const CreateEditImportAccount = () => {
   });
 
   useEffect(() => {
+    setImgIcon(colorPalette[getRandomIndex(colorPalette.length)]);
+  }, []);
+
+  useEffect(() => {
     if (redirectFrom === t('common:screen_types.createSubAccount')) {
-      getDerivationPathIndex(0);
+      setDerivationIndex(
+        WalletCommonService().getNextDerivationPathIndex(defaultNetwork),
+      );
     }
   }, []);
 
@@ -168,45 +167,10 @@ const CreateEditImportAccount = () => {
     }
   };
 
-  // Asynchronous function to get the derivation path index and check wallet address is exists or not
-  const getDerivationPathIndex = async (pathIndex: number) => {
-    await nextFrame();
-    if (pathIndex === 0) {
-      let tempPathIndex = userInfo.usersData.length;
-      const last = userInfo.usersData.slice(-1);
-      if (last.length > 0) {
-        tempPathIndex = Number(last[0].derivationPathIndex) + 1;
-      }
-      checkWalletAddressIsExists(tempPathIndex);
-    } else {
-      checkWalletAddressIsExists(pathIndex + 1);
-    }
-  };
-
-  // Asynchronous function check wallet address is exists or not
-  const checkWalletAddressIsExists = async (pathIndex: number) => {
-    const wallet = await WalletCommonService().createDefaultWallet(
-      seedPhraseOrPrivateKey,
-      `${pathIndex}`,
-    );
-    const addressExists = Object.values(walletAddressList).some(obj =>
-      Object.values(obj).includes(wallet.address),
-    );
-    if (addressExists) {
-      getDerivationPathIndex(pathIndex);
-    } else {
-      setDerivationIndex(pathIndex);
-    }
-  };
-
   useUpdateEffect(() => {
     const user = {
       userName: getValues().userName.trim(),
       userId: userId,
-      derivationPathIndex:
-        redirectFrom === t('common:screen_types.createSubAccount')
-          ? `${derivationIndex}`
-          : '0',
       privateKey:
         redirectFrom === t('common:screen_types.createSubAccount')
           ? undefined
@@ -231,23 +195,31 @@ const CreateEditImportAccount = () => {
 
   // Asynchronous function create Account and store user data and add defaults networks in redux
   const createSubAccount = async () => {
+    WalletCommonService().resetAllWallet();
+    dispatch(
+      updateLoader({
+        isLoading: true,
+      }),
+    );
     if (redirectFrom === t('common:screen_types.createSubAccount')) {
       const wallet = await WalletCommonService().createDefaultWallet(
         seedPhraseOrPrivateKey,
-        `${derivationIndex}`,
+        derivationIndex,
       );
 
       const supraWallet = await SupraService().getWalletUsingSeed(
         seedPhraseOrPrivateKey,
-        `${derivationIndex}`,
+        derivationIndex,
       );
       StoreUpdateReduxWalletStateService().updateWalletAddressInStore(
         supraWallet.address,
         NetWorkType.SUP,
+        derivationIndex,
       );
       StoreUpdateReduxWalletStateService().updateWalletAddressInStore(
         wallet.address,
         selectedNetwork,
+        derivationIndex,
       );
       const tokenObj = tokensList[selectedNetwork];
       const supraToken = tokensList[NetWorkType.SUP];
@@ -333,11 +305,13 @@ const CreateEditImportAccount = () => {
         );
       }
     }
-
-    WalletCommonService().resetAllWallet();
     dispatch(updateCurrentUserNetworkList({ userId: userInfo.currentUserId }));
-    dispatch(triggerFetchAllTokenBalanceAndStartObservers());
     dispatch(updateSelectedNetworkFilter({ data: null }));
+    dispatch(
+      updateLoader({
+        isLoading: false,
+      }),
+    );
     navigation.navigate(ScreenNames.Accounts);
   };
 
@@ -422,11 +396,7 @@ const CreateEditImportAccount = () => {
 
         <Button
           text={btnText}
-          backGroundColor={
-            errors?.userName?.message
-              ? applyOpacityToHexColor(Colors.switchBGColor, 0.3)
-              : Colors.primary
-          }
+          colors={errors?.userName?.message && Colors.disableGradientColor}
           onPress={handleSubmit(onSubmit)}
           btnTextColor={
             errors?.userName?.message ? Colors.buttonGrayText : Colors.white

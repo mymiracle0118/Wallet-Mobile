@@ -83,3 +83,11 @@ jest.mock('@sentry/react-native', () => ({
   init: jest.fn(),
   wrap: jest.fn(),
 }));
+
+jest.mock('@gorhom/bottom-sheet', () => ({
+  __esModule: true,
+  ...require('@gorhom/bottom-sheet/mock'),
+  BottomSheetTextInput: require('react-native').TextInput,
+}));
+
+jest.mock('rn-qr-generator');

@@ -19,7 +19,11 @@ const CheckBoxView = ({ isChecked, setIsChecked, text }: Props) => {
   return (
     <>
       <View style={style(Layout).container}>
-        <TouchableOpacity style={Gutters.tinyRMargin} onPress={handleCheck}>
+        <TouchableOpacity
+          testID="checkbox-view"
+          style={Gutters.tinyRMargin}
+          onPress={handleCheck}
+        >
           <Image
             style={style(Layout).icon}
             source={

@@ -27,6 +27,7 @@ const AnimatedRotate = ({ middleView }: Props) => {
 
   return (
     <Animated.View
+      testID="animated-view"
       style={{
         transform: [{ rotate }],
       }}

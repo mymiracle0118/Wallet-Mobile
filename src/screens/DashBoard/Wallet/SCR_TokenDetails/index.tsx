@@ -8,19 +8,17 @@ import { ActivityListHandleType } from 'components/ActivityListView/ActivityList
 import {
   ActivityListView,
   BorderButton,
-  ButtonWithIcon,
   DashBoardHeader,
-  GasPriceAlertBottomSheetView,
   HorizontalSeparatorView,
-  ProfitLossPriceView,
   SafeAreaWrapper,
   SortByFilterBottomSheetView,
   TokenGasPriceView,
-  VerticalSeparatorView,
+  TokenPriceView,
 } from 'components/index';
 import useUpdateEffect from 'customHooks/useUpdateEffect';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
+import SupraService from 'services/SupraService';
 import WalletCommonService from 'services/WalletCommonService';
 import { getTokenActivityListFetch } from 'services/apiActions';
 import { AppDispatch, RootState } from 'store/index';
@@ -28,11 +26,13 @@ import {
   setTokenAsFavorite,
   hideTokenFromList,
   updateTokenTransactionDetails,
+  updateSelectedNetworkFilter,
 } from 'store/wallet';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import {
   USDollar,
+  getRoundDecimalValue,
   getWalletAddress,
+  showConfirmationModal,
   showToast,
 } from 'theme/Helper/common/Function';
 import {
@@ -44,6 +44,7 @@ import Variables from 'theme/Variables';
 import { mockData } from 'theme/mockData';
 import ScreenNames from 'theme/screenNames';
 import { ActivityItemInterface } from 'types/apiResponseInterfaces';
+import { PopUpItem } from 'types/applicationInterfaces';
 
 import { style } from './style';
 
@@ -52,9 +53,8 @@ const TokenDetails: React.FC<any> = () => {
   const refFilter = useRef<ActivityListHandleType>();
   const [mounted, setMounted] = useState(false);
 
-  const { Common, Images, Layout, Colors, Gutters } = useTheme();
+  const { Common, Images, Gutters } = useTheme();
 
-  // const isFocus = useIsFocused();
   const dispatch = useDispatch<AppDispatch>();
 
   const shouldShowBalance = useSelector(
@@ -84,19 +84,47 @@ const TokenDetails: React.FC<any> = () => {
     return currentTokenInfo?.tokenType === 'Native'
       ? currentTokenInfo
       : state.wallet.data.currentUserTokenArrayWithBalance[
-          currentTokenInfo?.networkName === 'Matic'
-            ? 'Polygon'
-            : currentTokenInfo?.networkName
+          currentTokenInfo?.networkName
         ];
   });
 
   const [openFilterBottomSheet, setOpenFilterBottomSheet] = useState(false);
   const [shouldShowFooterLoader, setShouldShowFooterLoader] = useState(false);
   const [currentPage] = useState(1);
-  const [openGasPriceBottomSheet, setOpenGasPriceBottomSheet] = useState(false);
   const [estimatedGasFeeInGwei, setEstimatedGasFeeInGwei] = useState(0);
 
   const [isGasFeeFetching, setIsGasFeeFetching] = useState(true);
+
+  const selectedNetworkFilterObj = useSelector((state: RootState) => {
+    return state.wallet.selectedNetworkFilter;
+  });
+
+  const callOk = () => {
+    showToast('error', t('common:token_hidden'));
+    dispatch(
+      hideTokenFromList({
+        token: currentTokenInfo,
+      }),
+    );
+    if (selectedNetworkFilterObj?.id === currentTokenInfo?.id) {
+      dispatch(updateSelectedNetworkFilter({ data: null }));
+    }
+    navigation.goBack();
+  };
+
+  const onPressCancel = () => {};
+
+  const popUpLogOutObj = {
+    isVisible: true,
+    popupTitle: t('wallet:hide_custom_network_title'),
+    popupDescription: t('wallet:hide_custom_network_des'),
+    buttonOkText: t('common:Hide_Now'),
+    okButtonType: 'destructive',
+    buttonCancelText: t('common:cancel'),
+    onPressOk: callOk,
+    onPressCancel: onPressCancel,
+    iconPath: Images.ic_cancel_transaction,
+  } as PopUpItem;
 
   const getGasFees = async () => {
     setIsGasFeeFetching(true);
@@ -149,6 +177,7 @@ const TokenDetails: React.FC<any> = () => {
       currentTokenInfo?.isEVMNetwork,
     );
   };
+
   return (
     <>
       <SafeAreaWrapper applyToOnlyTopEdge={false}>
@@ -168,7 +197,11 @@ const TokenDetails: React.FC<any> = () => {
             <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
             <TokenGasPriceView
               tokenIconPath={currentTokenInfo?.image}
-              amount={currentTokenInfo?.amount + ' ' + currentTokenInfo?.title}
+              amount={
+                (getRoundDecimalValue(currentTokenInfo?.amount) ?? '0') +
+                '\n' +
+                currentTokenInfo?.title
+              }
               usdAmount={
                 currentTokenInfo?.amount * currentTokenInfo?.usdAmount > 0
                   ? USDollar().format(
@@ -177,41 +210,55 @@ const TokenDetails: React.FC<any> = () => {
                   : undefined
               }
               gasPriceGwei={
-                estimatedGasFeeInGwei +
+                (estimatedGasFeeInGwei
+                  ? getRoundDecimalValue(estimatedGasFeeInGwei) ?? '0'
+                  : 0) +
                 ' ' +
                 (nativeCurrencyToken?.tokenGasFeeUnitToDisplay
                   ? nativeCurrencyToken?.tokenGasFeeUnitToDisplay
                   : t('common:gwei'))
               }
-              usdGasPriceGwei={USDollar(15).format(
-                estimatedGasFeeInGwei *
-                  Math.pow(
-                    10,
-                    nativeCurrencyToken?.shortName === NetWorkType.APT
-                      ? -8
-                      : -9,
-                  ) *
-                  nativeCurrencyToken?.usdAmount,
-              )}
-              onPressAlert={() => {
-                setOpenGasPriceBottomSheet(true);
-              }}
+              usdGasPriceGwei={
+                USDollar(15).format(
+                  getRoundDecimalValue(
+                    (estimatedGasFeeInGwei ? estimatedGasFeeInGwei : 0) *
+                      Math.pow(
+                        10,
+                        nativeCurrencyToken?.shortName === NetWorkType.APT
+                          ? -8
+                          : -9,
+                      ) *
+                      nativeCurrencyToken?.usdAmount,
+                  ),
+                ) ?? '0'
+              }
+              onPressAlert={() => {}}
               onPressReceive={() => {
                 navigation.navigate(ScreenNames.ReceiveToken);
               }}
               onPressSend={() => {
                 navigation.navigate(ScreenNames.WalletTokenSendFrom);
               }}
+              onPressCollect={
+                nativeCurrencyToken?.shortName === NetWorkType.SUP
+                  ? () => {
+                      SupraService().collectTokenFromFaucet(currentTokenInfo);
+                    }
+                  : null
+              }
               onPressSwap={() => {}}
               onPressBuy={() => {}}
               onPressHide={() => {
-                showToast('error', t('common:token_hidden'));
-                dispatch(
-                  hideTokenFromList({
-                    token: currentTokenInfo,
-                  }),
-                );
-                navigation.goBack();
+                if (
+                  currentTokenInfo?.isCustom &&
+                  currentTokenInfo?.tokenType === 'Native'
+                ) {
+                  setTimeout(() => {
+                    showConfirmationModal(popUpLogOutObj);
+                  }, 400);
+                } else {
+                  callOk();
+                }
               }}
               isFavorite={currentTokenInfo?.isFavorite}
               onPressFavorite={() => {
@@ -223,56 +270,30 @@ const TokenDetails: React.FC<any> = () => {
               }}
               shouldShowBalance={shouldShowBalance}
               isGasFeeFetching={isGasFeeFetching}
+              isShowHide={
+                currentTokenInfo?.shortName === NetWorkType.SUP ||
+                currentTokenInfo?.shortName === NetWorkType.ETH
+              }
             />
-            <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
 
-            <View style={Layout.row}>
-              <ProfitLossPriceView
-                title={currentTokenInfo?.title + ' ' + t('common:Price')}
-                amount={USDollar().format(currentTokenInfo?.usdAmount ?? 0)}
-                percentage={
-                  currentTokenInfo?.oneDayUSDPriceChangePercentage?.toFixed(
-                    2,
-                  ) ?? 0 + ''
-                }
-                onPress={() => {}}
-              />
-              <VerticalSeparatorView spacing={Variables.MetricsSizes.small} />
-
-              <ProfitLossPriceView
-                title={t('wallet:Profit_Loss')}
-                amount={USDollar().format(
-                  ((currentTokenInfo?.usdAmount ?? 0) *
-                    (currentTokenInfo?.amount ?? 0) *
-                    (currentTokenInfo?.oneDayUSDPriceChangePercentage ?? 0)) /
-                    100,
-                )}
-                percentage={
-                  !shouldShowBalance
-                    ? currentTokenInfo?.oneDayUSDPriceChangePercentage?.toFixed(
-                        2,
-                      ) ?? 0 + ''
-                    : '0'
-                }
-                onPress={() => {}}
-                shouldShowBalance={shouldShowBalance}
-              />
-            </View>
             {currentTokenInfo?.coingeckoTokenId && (
               <>
                 <HorizontalSeparatorView
                   spacing={Variables.MetricsSizes.small}
                 />
-                <ButtonWithIcon
-                  text={t('wallet:price_chart')}
+                <TokenPriceView
+                  title={currentTokenInfo?.title + ' ' + t('common:Price')}
+                  amount={USDollar().format(currentTokenInfo?.usdAmount ?? 0)}
+                  percentage={
+                    currentTokenInfo?.oneDayUSDPriceChangePercentage?.toFixed(
+                      2,
+                    ) ?? 0 + ''
+                  }
                   onPress={() => {
                     Linking.openURL(
                       `${coinGeckoPriceChartBaseURL}${currentTokenInfo?.coingeckoTokenId}`,
                     );
                   }}
-                  backGroundColor={Colors.inputBackground}
-                  iconPath={Images.ic_send}
-                  textColor={applyOpacityToHexColor(Colors.textGray600, 0.6)}
                 />
               </>
             )}
@@ -310,8 +331,8 @@ const TokenDetails: React.FC<any> = () => {
             <View
               style={
                 DeviceMetrics.hasNotch
-                  ? style(Layout, Gutters).bottomViewTiny
-                  : style(Layout, Gutters).bottomView
+                  ? style(Gutters).bottomViewTiny
+                  : style(Gutters).bottomView
               }
             >
               {currentTokenInfo?.explorerAccountURL && (
@@ -333,9 +354,7 @@ const TokenDetails: React.FC<any> = () => {
       </SafeAreaWrapper>
       {/* Filter modal */}
       <SortByFilterBottomSheetView
-        onChange={index => {
-          console.log(index);
-        }}
+        onChange={() => {}}
         multiSelect={true}
         title={t('common:Filter')}
         onDonePress={item => {
@@ -350,20 +369,6 @@ const TokenDetails: React.FC<any> = () => {
         onClose={() => {
           refFilter?.current?.applySortFilter({}, 'clearFilter');
           setOpenFilterBottomSheet(false);
-        }}
-      />
-      {/* Gas Price Alert modal */}
-      <GasPriceAlertBottomSheetView
-        title={t('wallet:gas_price_alerts')}
-        isSheetOpen={openGasPriceBottomSheet}
-        onClose={() => {
-          setOpenGasPriceBottomSheet(false);
-        }}
-        onPressSetAlerts={() => {
-          navigation.navigate(ScreenNames.GasPriceAlert);
-        }}
-        onPressDeleteAlert={id => {
-          console.log('onPressDeleteAlert :: id ::', id);
         }}
       />
     </>

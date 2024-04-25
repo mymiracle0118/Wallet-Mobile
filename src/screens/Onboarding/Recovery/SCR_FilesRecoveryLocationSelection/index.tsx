@@ -13,7 +13,6 @@ import {
 } from 'components/index';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import Variables from 'theme/Variables';
 import { mockData } from 'theme/mockData';
 import ScreenNames from 'theme/screenNames';
@@ -59,15 +58,11 @@ export default function FilesRecoveryLocationSelection() {
             if (currentSelectedIds?.length < 2) {
               return;
             }
-            navigation.navigate(ScreenNames.CloudRecovery, {
+            navigation.navigate(ScreenNames.FileRecovery, {
               selectedRecoveryOptions: arrData,
             });
           }}
-          backGroundColor={
-            currentSelectedIds?.length < 2
-              ? applyOpacityToHexColor(Colors.switchBGColor, 0.3)
-              : Colors.primary
-          }
+          colors={currentSelectedIds?.length < 2 && Colors.disableGradientColor}
           btnTextColor={
             currentSelectedIds?.length < 2
               ? Colors.buttonGrayText

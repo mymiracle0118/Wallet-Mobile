@@ -20,7 +20,9 @@ export default function AmountView({
   const { Layout, Fonts, Gutters } = useTheme();
   return (
     <View style={[Layout.rowCenter, Gutters.tinyVMargin]}>
-      <Text style={[Fonts.textSmallBoldWhite]}>{title}</Text>
+      <Text style={[Fonts.textSmallBoldWhite, Gutters.tinyRMargin]}>
+        {title}
+      </Text>
       <View style={Layout.fill}>
         <Text style={[Fonts.textSmallBoldWhite, Fonts.textRight]}>
           {`${amount ? amount : 0}${tokenType ? ' ' + tokenType : ''}`}

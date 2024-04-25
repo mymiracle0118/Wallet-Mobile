@@ -10,7 +10,7 @@ import LinearGradient from 'react-native-linear-gradient';
 
 import { formatAddress } from 'theme/Helper/Address';
 
-import { BorderButton } from '..';
+import { AddressView } from '..';
 import { useTheme } from '../../hooks';
 import { style } from './styles';
 
@@ -63,12 +63,9 @@ const UserAddressView = ({
       )}
 
       {walletAddress && (
-        <BorderButton
+        <AddressView
           text={formatAddress(walletAddress, 'short')}
-          onPress={() => {}}
-          btnStyle={style(Gutters, Layout).addressBtn}
-          textStyle={Fonts.textSmallTinyWhiteMedium}
-          disabled={true}
+          walletAddress={walletAddress}
         />
       )}
     </View>

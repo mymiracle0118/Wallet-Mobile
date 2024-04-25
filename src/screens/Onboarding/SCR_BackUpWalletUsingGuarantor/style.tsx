@@ -8,5 +8,9 @@ export const style = (Layout: typeof layout) => {
       ...Layout.fill,
       ...BorderRadius.MediumBorderRadius,
     },
+    bottomView: {
+      ...Layout.fill,
+      ...Layout.justifyContentEnd,
+    },
   });
 };

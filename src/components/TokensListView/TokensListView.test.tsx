@@ -1,7 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 
-import mockBottomSheet from '@gorhom/bottom-sheet/mock';
 import { NavigationContainer } from '@react-navigation/native';
 import { render } from '@testing-library/react-native';
 import { store } from 'store/index';
@@ -9,10 +8,6 @@ import { mockData } from 'theme/mockData';
 
 import TokensListView from './TokensListView';
 
-jest.mock('@gorhom/bottom-sheet', () => ({
-  ...mockBottomSheet,
-  __esModule: true,
-}));
 test('render correctly', () => {
   const component = (
     <NavigationContainer>

@@ -39,7 +39,6 @@ type Props = {
   walletAddress: string;
   shouldShowLoader: boolean;
   shouldShowNoData: boolean;
-  // shouldShowFooterLoader: boolean;
   shouldShowBalance?: boolean;
 };
 
@@ -52,7 +51,6 @@ const ActivityListView = forwardRef<ActivityListHandleType, Props>(
       onPressItem,
       walletAddress,
       shouldShowLoader,
-      // shouldShowFooterLoader,
       shouldShowBalance,
       shouldShowNoData,
     } = props;
@@ -76,7 +74,6 @@ const ActivityListView = forwardRef<ActivityListHandleType, Props>(
     // as the second argument
     useImperativeHandle(ref, () => ({
       applySortFilter(obj, type: 'filter' | 'clearFilter') {
-        console.log('obj', obj, 'type', type);
         if (type === 'filter') {
           setFilterObj(obj);
         } else if (type === 'clearFilter') {
@@ -126,8 +123,6 @@ const ActivityListView = forwardRef<ActivityListHandleType, Props>(
             />
           )}
           ListFooterComponent={
-            // shouldShowFooterLoader ? <FooterLoader /> : <></>
-
             !shouldShowLoader &&
             activityListArray?.length !== 0 && (
               <View

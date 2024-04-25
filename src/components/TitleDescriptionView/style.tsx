@@ -24,5 +24,13 @@ export const style = (
       height: 20,
       ...Gutters.tinyLMargin,
     },
+    textInputContainer: {
+      ...Layout.rowHCenter,
+      ...Layout.justifyContentBetween,
+    },
+    textInput: {
+      ...Layout.fill,
+      paddingVertical: 0,
+    },
   });
 };

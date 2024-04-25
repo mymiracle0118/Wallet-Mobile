@@ -10,5 +10,9 @@ export const style = (Gutters: typeof gutters, Layout: typeof layout) => {
       ...Layout.justifyContentBetween,
       ...Layout.alignItemsCenter,
     },
+    image: {
+      height: 12,
+      width: 12,
+    },
   });
 };

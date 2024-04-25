@@ -64,10 +64,10 @@ const WalletTokenItem = ({ item, shouldShowBalance }: Props) => {
             {item?.subTitle ?? item?.networkName}
           </Text>
         </View>
-        <View style={[Layout.alignItemsEnd, Layout.justifyContentCenter]}>
+        <View style={style(Gutters, Layout, Colors).viewAmount}>
           <Text style={[Fonts.titleSmall]}>
             {!shouldShowBalance
-              ? getRoundDecimalValue(item?.amount) ?? '0'
+              ? getRoundDecimalValue(item?.amount || 0) ?? '0'
               : t('common:hidden_symbol')}
           </Text>
           {item?.usdAmount > 0 && (

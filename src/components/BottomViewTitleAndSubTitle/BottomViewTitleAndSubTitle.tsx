@@ -15,12 +15,12 @@ type Props = {
 };
 
 const BottomViewTitleAndSubTitle = (props: Props) => {
-  const { Layout, Gutters, Colors, Fonts } = useTheme();
+  const { Gutters, Colors, Fonts } = useTheme();
 
   const { title, subTitle, middleView, onLayout } = props;
 
   return (
-    <View style={[style(Layout, Gutters, Colors).container]}>
+    <View style={[style(Gutters, Colors).container]}>
       <View onLayout={onLayout}>
         <Text style={[Fonts.textLarge, Gutters.smallBMargin]}>{title}</Text>
       </View>

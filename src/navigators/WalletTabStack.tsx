@@ -4,19 +4,19 @@ import {
   CardStyleInterpolators,
   createStackNavigator,
 } from '@react-navigation/stack';
-import AddAddress from 'screens/DashBoard/Settings/SCR_AddAddress';
-import AddressBook from 'screens/DashBoard/Settings/SCR_AddressBook';
-import AddNetwork from 'screens/DashBoard/Wallet/SCR_AddNetwork';
-import AddToken from 'screens/DashBoard/Wallet/SCR_AddToken';
-import GasPriceAlert from 'screens/DashBoard/Wallet/SCR_GasPriceAlert';
-import NetworkFilter from 'screens/DashBoard/Wallet/SCR_NetworkFilter';
-import WalletAddressScanner from 'screens/DashBoard/Wallet/SCR_WalletAddressScanner';
 import {
   ActivityDetails,
+  AddAddress,
+  AddNetwork,
+  AddToken,
+  AddressBook,
   ChooseNetwork,
+  GasPriceAlert,
+  NetworkFilter,
   ReceiveToken,
   TokenDetails,
   Wallet,
+  WalletAddressScanner,
   WalletTokenSendFrom,
   WalletTokenSendReview,
   WalletTokenSendTo,
@@ -64,6 +64,7 @@ const WalletTabStack = () => {
       <Stack.Screen
         name={ScreenNames.ActivityDetails}
         component={ActivityDetails}
+        options={{ gestureEnabled: false }}
       />
       <Stack.Screen
         name={ScreenNames.ChooseNetwork}

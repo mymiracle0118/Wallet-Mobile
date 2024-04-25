@@ -50,9 +50,9 @@ const Welcome: React.FC<any> = () => {
 
   return (
     <SafeAreaWrapper applyToOnlyTopEdge={false}>
-      <BackgroundView image={Images.background.ic_backgroundGradientLayer} />
+      <BackgroundView image={Images.background.ic_bg_welcome} />
       <View style={style(Gutters, Layout).subView}>
-        <Brand height={110} width={110} />
+        <Brand height={120} width={120} />
         <HorizontalSeparatorView spacing={Variables.MetricsSizes.large} />
         <View>
           <Button

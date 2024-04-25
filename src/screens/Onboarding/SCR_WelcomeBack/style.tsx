@@ -12,8 +12,8 @@ export const style = (Gutters: typeof gutters, Layout: typeof layout) => {
     },
     icon: {
       ...Layout.fullSize,
-      height: 80,
-      width: 80,
+      height: 120,
+      width: 120,
       marginTop: 100,
     },
     title: {

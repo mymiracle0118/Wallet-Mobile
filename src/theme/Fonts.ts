@@ -31,15 +31,30 @@ export default function ({ FontSize, Colors, fontFamily }: ThemeVariables) {
       fontFamily: fontFamily.Bold,
       color: Colors.white,
     },
-    textSmallBoldWhite: {
-      fontSize: FontSize.small,
-      fontFamily: fontFamily.Bold,
-      color: Colors.white,
-    },
     textTinyDescriptionBold: {
       fontSize: FontSize.tiny,
       color: applyOpacityToHexColor(Colors.textGray600, 0.6),
       fontFamily: fontFamily.Bold,
+    },
+    textTinyDescriptionLightRegular: {
+      fontSize: FontSize.tiny,
+      color: applyOpacityToHexColor(Colors.textGray600, 0.3),
+      fontFamily: fontFamily.Regular,
+    },
+    textTinyDescriptionRegular: {
+      fontSize: FontSize.tiny,
+      color: applyOpacityToHexColor(Colors.textGray600, 0.6),
+      fontFamily: fontFamily.Regular,
+    },
+    textTinyGrayLightRegular: {
+      fontSize: FontSize.tiny,
+      fontFamily: fontFamily.Regular,
+      color: Colors.grayText,
+    },
+    textSmallBoldWhite: {
+      fontSize: FontSize.small,
+      fontFamily: fontFamily.Bold,
+      color: Colors.white,
     },
     textSmallDescriptionBold: {
       fontSize: FontSize.small,
@@ -51,36 +66,18 @@ export default function ({ FontSize, Colors, fontFamily }: ThemeVariables) {
       color: applyOpacityToHexColor(Colors.textGray600, 0.6),
       fontFamily: fontFamily.Regular,
     },
-
-    textTinyDescriptionLightRegular: {
-      fontSize: FontSize.tiny,
-      color: applyOpacityToHexColor(Colors.textGray600, 0.3),
-      fontFamily: fontFamily.Regular,
-    },
-    textTinyDescriptionRegular: {
-      fontSize: FontSize.tiny,
-      color: applyOpacityToHexColor(Colors.textGray600, 0.6),
-      fontFamily: fontFamily.Regular,
-    },
     textSmallBold: {
       fontSize: FontSize.small,
       color: Colors.white,
       fontFamily: fontFamily.Bold,
     },
-
     textSmallMediumExtraBold: {
       fontSize: FontSize.smallMedium,
       color: Colors.white,
       fontFamily: fontFamily.ExtraBold,
     },
-
     textSmallRegular: {
       fontSize: FontSize.small,
-      color: Colors.white,
-      fontFamily: fontFamily.Regular,
-    },
-    textMediumRegular: {
-      fontSize: FontSize.regular,
       color: Colors.white,
       fontFamily: fontFamily.Regular,
     },
@@ -88,15 +85,52 @@ export default function ({ FontSize, Colors, fontFamily }: ThemeVariables) {
       fontSize: FontSize.small,
       color: Colors.textGray400,
     },
+    textSmallWhiteBold: {
+      fontSize: FontSize.small,
+      color: Colors.textWhite,
+      fontFamily: fontFamily.Bold,
+    },
+    textSmallTinyGrayOpacityRegular: {
+      fontSize: FontSize.smallTiny,
+      color: Colors.textGray600,
+      opacity: 0.6,
+      fontFamily: fontFamily.Regular,
+    },
+    textSmallTinyGrayOpacityBold: {
+      fontSize: FontSize.smallTiny,
+      color: Colors.textGray600,
+      opacity: 0.6,
+      fontFamily: fontFamily.Bold,
+    },
+    textSmallTinyWhiteMedium: {
+      fontSize: FontSize.smallTiny,
+      fontFamily: fontFamily.Medium,
+      color: Colors.white,
+    },
+    textSmallTinyWhiteBold: {
+      fontSize: FontSize.smallTiny,
+      fontFamily: fontFamily.Bold,
+      color: Colors.white,
+    },
+    textRegular: {
+      fontSize: FontSize.regular,
+      color: Colors.textWhite,
+      fontFamily: fontFamily.Regular,
+    },
     textRegularBold: {
       fontSize: FontSize.regular,
       color: Colors.textWhite,
       fontFamily: fontFamily.Bold,
     },
-    textSmallWhiteBold: {
-      fontSize: FontSize.small,
-      color: Colors.textWhite,
-      fontFamily: fontFamily.Bold,
+    textRegularBlack: {
+      fontSize: FontSize.regular,
+      fontFamily: fontFamily.Regular,
+      color: Colors.inputBackground,
+    },
+    textMediumRegular: {
+      fontSize: FontSize.regular,
+      color: Colors.white,
+      fontFamily: fontFamily.Regular,
     },
     textLarge: {
       fontSize: FontSize.large,
@@ -114,7 +148,6 @@ export default function ({ FontSize, Colors, fontFamily }: ThemeVariables) {
       opacity: 0.6,
       fontFamily: fontFamily.Regular,
     },
-    //smallRegular
     textOpacitySmallRegular: {
       fontSize: FontSize.regular,
       color: Colors.textGray600,
@@ -138,33 +171,10 @@ export default function ({ FontSize, Colors, fontFamily }: ThemeVariables) {
       opacity: 0.6,
       fontFamily: fontFamily.Regular,
     },
-    textSmallTinyGrayOpacityRegular: {
-      fontSize: FontSize.smallTiny,
-      color: Colors.textGray600,
-      opacity: 0.6,
-      fontFamily: fontFamily.Regular,
-    },
-    textSmallTinyGrayOpacityBold: {
-      fontSize: FontSize.smallTiny,
-      color: Colors.textGray600,
-      opacity: 0.6,
-      fontFamily: fontFamily.Bold,
-    },
     textCount: {
       fontSize: FontSize.tiny,
       color: Colors.textGray600,
       fontFamily: fontFamily.Regular,
-    },
-    textRegular: {
-      fontSize: FontSize.regular,
-      color: Colors.textWhite,
-      fontFamily: fontFamily.Regular,
-    },
-    textBold: {
-      fontWeight: 'bold',
-    },
-    textUppercase: {
-      textTransform: 'uppercase',
     },
     titleSmall: {
       fontSize: FontSize.small,
@@ -191,6 +201,27 @@ export default function ({ FontSize, Colors, fontFamily }: ThemeVariables) {
       color: Colors.white,
       fontFamily: fontFamily.ExtraBold,
     },
+    textErrorTinyBold: {
+      fontSize: FontSize.tiny,
+      fontFamily: fontFamily.Bold,
+      color: Colors.textError,
+    },
+    textErrorRegularBold: {
+      fontSize: FontSize.regular,
+      fontFamily: fontFamily.Bold,
+      color: Colors.textError,
+    },
+    textSuccessRegularBold: {
+      fontSize: FontSize.regular,
+      fontFamily: fontFamily.Bold,
+      color: Colors.textSuccess,
+    },
+    textBold: {
+      fontWeight: 'bold',
+    },
+    textUppercase: {
+      textTransform: 'uppercase',
+    },
     textCenter: {
       textAlign: 'center',
     },
@@ -207,44 +238,9 @@ export default function ({ FontSize, Colors, fontFamily }: ThemeVariables) {
     textRight: {
       textAlign: 'right',
     },
-    textErrorTinyBold: {
-      fontSize: FontSize.tiny,
-      fontFamily: fontFamily.Bold,
-      color: Colors.textError,
-    },
-    textSmallTinyWhiteMedium: {
-      fontSize: FontSize.smallTiny,
-      fontFamily: fontFamily.Medium,
-      color: Colors.white,
-    },
-    textSmallTinyWhiteBold: {
-      fontSize: FontSize.smallTiny,
-      fontFamily: fontFamily.Bold,
-      color: Colors.white,
-    },
-    textErrorRegularBold: {
-      fontSize: FontSize.regular,
-      fontFamily: fontFamily.Bold,
-      color: Colors.textError,
-    },
-    textSuccessRegularBold: {
-      fontSize: FontSize.regular,
-      fontFamily: fontFamily.Bold,
-      color: Colors.textSuccess,
-    },
-    textTinyGrayLightRegular: {
-      fontSize: FontSize.tiny,
-      fontFamily: fontFamily.Regular,
-      color: Colors.grayText,
-    },
     textLobster: {
       fontFamily: 'lobster',
       fontWeight: 'normal',
-    },
-    textRegularBlack: {
-      fontSize: FontSize.regular,
-      fontFamily: fontFamily.Regular,
-      color: Colors.inputBackground,
     },
   });
 }

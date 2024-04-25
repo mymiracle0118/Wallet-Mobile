@@ -20,6 +20,7 @@ export const style = (
     },
     flatListContainer: {
       ...Layout.fill,
+      ...Gutters.tinyTMargin,
     },
     itemContainer: {
       ...Layout.row,

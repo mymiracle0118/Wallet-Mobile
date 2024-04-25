@@ -29,7 +29,8 @@ interface Props extends TextInputProps {
   isSecureText?: boolean;
   onPressRightIcon?: () => void;
   backGroundColor?: string;
-  onChangeValue?: () => void;
+  onChangeValue?: (prop: any) => void;
+  onChangeTextValue?: (text: string) => void;
 }
 
 const InputBox = forwardRef<TextInput, Props>((props, ref) => {
@@ -50,6 +51,7 @@ const InputBox = forwardRef<TextInput, Props>((props, ref) => {
     onPressRightIcon,
     backGroundColor,
     onChangeValue,
+    onChangeTextValue,
   } = props;
   const { Layout, Colors, Gutters, Common, Images, Fonts } = useTheme();
 
@@ -77,10 +79,12 @@ const InputBox = forwardRef<TextInput, Props>((props, ref) => {
         <TextInput
           ref={ref}
           onChange={onChangeValue}
+          onChangeText={onChangeTextValue}
           {...props}
           style={[Common.textInput, Fonts.textRegular]}
           placeholderTextColor={applyOpacityToHexColor(Colors.textGray600, 0.6)}
           secureTextEntry={isSecure}
+          testID="input_box"
         />
         {shouldShowTextCount && (
           <DivideByText
@@ -142,6 +146,7 @@ InputBox.defaultProps = {
   onPressRightIcon: undefined,
   backGroundColor: '',
   onChangeValue: undefined,
+  onChangeTextValue: undefined,
 };
 
 export default InputBox;

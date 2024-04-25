@@ -21,6 +21,7 @@ export default function Loader() {
         right: 0,
         flexDirection: 'row',
         position: 'absolute',
+        backgroundColor: 'transparent',
       }}
     >
       <ActivityIndicatorLoader />

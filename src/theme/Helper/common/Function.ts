@@ -17,7 +17,7 @@ import {
   TokenReceivePopUpItem,
 } from 'types/applicationInterfaces';
 
-import { CurrencyName, defaultNetwork } from '../constant';
+import { CurrencyName, NetWorkType, defaultNetwork } from '../constant';
 
 ethers.randomBytes.register(length => {
   return new Uint8Array(crypto.randomBytes(length));
@@ -53,7 +53,7 @@ export function parseTokenBalance(balanceStr: string): number {
 // If 'value' is provided, it parses it as a float, otherwise, it defaults to 0.
 // It then rounds the number to 4 decimal places using the Math.round() method.
 // This function helps in handling floating-point precision errors in calculations.
-export const getRoundDecimalValue = (value?: any, decimal = 5) => {
+export const getRoundDecimalValue = (value?: any, decimal = 6) => {
   let tempValue = parseFloat(value ?? 0);
   let decimalValue = Math.pow(10, decimal);
   return Math.round((tempValue + Number.EPSILON) * decimalValue) / decimalValue;
@@ -116,6 +116,7 @@ export const generateRandomNumber = (length: number) => {
   return randomSequence;
 };
 
+let store;
 /*
 Sets the global 'store' variable to the provided '_store'.
 */
@@ -290,11 +291,7 @@ export const dateTimeConvert = (timeStamp: number) => {
 };
 
 export const getImageFromToken = (tokenName: string) => {
-  console.log('getImageFromToken()*&^', tokenName);
-
   const tokenObj = store.getState()?.wallet.data.tokensList[tokenName];
-  console.log('get tokenObj', tokenObj);
-
   return tokenObj;
 };
 
@@ -330,7 +327,7 @@ export const getWalletAddress = (
   ) {
     return store.getState().wallet?.data?.walletAddress[strUserName][
       isEVMNetwork ? defaultNetwork : networkName
-    ];
+    ]?.address;
   } else {
     return;
   }
@@ -388,18 +385,19 @@ export const generateRandomString = (length: number): string => {
   return result;
 };
 
-export const getUserDataFromAddress = (address: string) => {
+export const getUserDataFromAddress = (address: string, userId?: string) => {
   const walletAddress = store.getState()?.wallet.data.walletAddress;
 
-  const foundUser = Object.keys(walletAddress).find(userId =>
-    Object.keys(walletAddress[userId]).some(
+  const foundUser = Object.keys(walletAddress).find(strUserId =>
+    Object.keys(walletAddress[strUserId]).some(
       network =>
-        walletAddress[userId][network].toLowerCase() === address.toLowerCase(),
+        walletAddress[strUserId][network].address.toLowerCase() ===
+        address.toLowerCase(),
     ),
   );
 
   if (foundUser) {
-    return getUserDataFromUserList(foundUser);
+    return getUserDataFromUserList(userId ? userId : foundUser);
   }
 
   return getUsernameFromAddressBook(address);
@@ -435,8 +433,22 @@ export const getUserDataFromUserList = (userId: string) => {
  * @param {number} max - The upper bound for the random index.
  * @returns {number} - The randomly generated index.
  */
-export const getRandomIndex = (max: number): number =>
-  Math.floor(Math.random() * max);
+export const getRandomIndex = (max: number) => {
+  if (max > 0) {
+    return Math.floor(Math.random() * max);
+  }
+};
+
+export const getMinimumBalance = (networkType: string) => {
+  switch (networkType) {
+    case NetWorkType.SOL:
+      return 0.00089;
+    case NetWorkType.SUI:
+      return 0.01;
+    default:
+      return 0;
+  }
+};
 
 /**
  * Color palette array containing arrays of two color codes.

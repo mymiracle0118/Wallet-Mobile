@@ -36,7 +36,6 @@ const NotificationRawItem = (props: Props) => {
           text={item?.title}
           pattern={'[0-9]+ [A-Z]+|@[a-z0-9]+'}
         />
-        {/* <Text style={Fonts.textSmallRegular}>{item?.title}</Text> */}
         <View style={[Layout.rowHCenter, style(Gutters, Layout).time]}>
           <Text style={[Fonts.textSmallTinyGrayOpacityRegular]}>
             {item?.timeAgo}

@@ -33,7 +33,11 @@ const RecentTransactionListView: React.FC<Props> = ({
         <UserAddressView
           walletAddress={item.address}
           containerStyle={Gutters.tiny9VPadding}
-          userName={getUserDataFromAddress(item.address)?.userName}
+          userName={
+            item?.userName
+              ? item?.userName
+              : getUserDataFromAddress(item.address)?.userName
+          }
           iconPath={
             getUserDataFromAddress(item.address)?.profileIcon ??
             item?.profileIcon

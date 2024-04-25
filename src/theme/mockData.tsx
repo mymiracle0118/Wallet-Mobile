@@ -60,6 +60,7 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     coingeckoTokenId: 'tether',
     isFavorite: false,
     isEVMNetwork: true,
+    envType: 'testNet',
   },
   USDC_ETH: {
     id: '4',
@@ -76,87 +77,7 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     coingeckoTokenId: 'usd-coin',
     isFavorite: false,
     isEVMNetwork: true,
-  },
-  Polygon: {
-    id: '5',
-    image: Images(Variables).ic_polygon,
-    title: 'Matic',
-    subTitle: 'Polygon',
-    shortName: 'Polygon',
-    amount: '0.0',
-    usdAmount: '0.0',
-    networkId: '3',
-    networkName: 'Matic',
-    tokenType: 'Native',
-    coingeckoTokenId: 'matic-network',
-    isFavorite: false,
-    isEVMNetwork: true,
-  },
-  BNB: {
-    id: '6',
-    image: Images(Variables).ic_BNB,
-    title: 'BNB',
-    subTitle: 'Binance Smart Chain',
-    shortName: 'BNB',
-    amount: '0.0',
-    usdAmount: '0.0',
-    networkId: '4',
-    networkName: 'BNB',
-    tokenType: 'Native',
-    coingeckoTokenId: 'binancecoin',
-    isFavorite: false,
-    isEVMNetwork: true,
-  },
-
-  USDC_ETH_2: {
-    id: '10',
-    image: Images(Variables).ic_usdc,
-    title: 'USDC',
-    subTitle: 'USD coin',
-    shortName: 'USDC_ETH_2',
-    amount: '0.0',
-    usdAmount: '0.0',
-    networkId: '2',
-    networkName: 'ETH',
-    tokenType: 'ERC20',
-    tokenContractAddress: '0xEEa85fdf0b05D1E0107A61b4b4DB1f345854B952',
-    coingeckoTokenId: 'usd-coin',
-    isFavorite: false,
-    isEVMNetwork: true,
-  },
-
-  USDC_ETH_3: {
-    id: '11',
-    image: Images(Variables).ic_usdc,
-    title: 'USDC',
-    subTitle: 'USD coin',
-    shortName: 'USDC_ETH_3',
-    amount: '0.0',
-    usdAmount: '0.0',
-    networkId: '2',
-    networkName: 'ETH',
-    tokenType: 'ERC20',
-    tokenContractAddress: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',
-    coingeckoTokenId: 'usd-coin',
-    isFavorite: false,
-    isEVMNetwork: true,
-  },
-
-  USDC_Polygon: {
-    id: '12',
-    image: Images(Variables).ic_usdc,
-    title: 'USDC',
-    subTitle: 'USD coin polygon',
-    shortName: 'USDC_Polygon',
-    amount: '0.0',
-    usdAmount: '0.0',
-    networkId: '3',
-    networkName: 'Matic',
-    tokenType: 'ERC20',
-    tokenContractAddress: '0x0FA8781a83E46826621b3BC094Ea2A0212e71B23',
-    coingeckoTokenId: 'usd-coin',
-    isFavorite: false,
-    isEVMNetwork: true,
+    envType: 'testNet',
   },
   SUI: {
     id: '7',
@@ -201,22 +122,6 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     coingeckoTokenId: 'aptos',
     isFavorite: false,
   },
-  USDC_BNB: {
-    id: '13',
-    image: Images(Variables).ic_usdc,
-    title: 'USDC',
-    subTitle: 'USD coin BNB',
-    shortName: 'USDC_BNB',
-    amount: '0.0',
-    usdAmount: '0.0',
-    networkId: '4',
-    networkName: 'BNB',
-    tokenType: 'ERC20',
-    tokenContractAddress: '0x64544969ed7EBf5f083679233325356EbE738930',
-    coingeckoTokenId: 'usd-coin',
-    isFavorite: false,
-    isEVMNetwork: true,
-  },
   USDC_SOL: {
     id: '14',
     image: Images(Variables).ic_usdc,
@@ -231,6 +136,7 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     tokenContractAddress: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
     coingeckoTokenId: 'usd-coin',
     isFavorite: false,
+    envType: 'mainNet',
   },
 
   USDC_Dev_SOL: {
@@ -247,6 +153,7 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     tokenContractAddress: 'Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr',
     coingeckoTokenId: 'usd-coin',
     isFavorite: false,
+    envType: 'mainNet',
   },
 
   Wrapped_SOL_SOL: {
@@ -263,6 +170,7 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     tokenContractAddress: 'So11111111111111111111111111111111111111112',
     coingeckoTokenId: 'wrapped-solana',
     isFavorite: false,
+    envType: 'mainNet',
   },
   Supra_APT: {
     id: '17',
@@ -278,9 +186,10 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     // tokenContractAddress:
     //   '0xe184ec4ed9a4483a7815b5a45a88d0d99308a343d1008f0c4fc8898b6d990a0f', // devnet
     tokenContractAddress:
-      '0x321b1e29e58a9f06df26afeb16a5698ecd8136f69e025978bc4b5b071f9d0e83', // testnet
+      '0x321b1e29e58a9f06df26afeb16a5698ecd8136f69e025978bc4b5b071f9d0e83::BasicToken::BasicToken', // testnet
     coingeckoTokenId: '',
     isFavorite: false,
+    envType: 'testNet',
   },
   Supra_SUI: {
     id: '18',
@@ -294,9 +203,10 @@ const networksListArray: { [key: string]: ExistingNetworksItem } = {
     networkName: 'SUI',
     tokenType: 'ERC20',
     tokenContractAddress:
-      '0x291c571787889fcb16ef49a73f9225c37759273365bb8ba9ab5aa72d4f1f903f',
+      '0x291c571787889fcb16ef49a73f9225c37759273365bb8ba9ab5aa72d4f1f903f::supra::SUPRA',
     coingeckoTokenId: 'Supra',
     isFavorite: false,
+    envType: 'testNet',
   },
 };
 
@@ -368,21 +278,21 @@ const tokenDetailActivityListFilter = [
     image: Images(Variables).ic_receive,
     text: 'common:Received',
   },
-  {
-    id: '3',
-    image: Images(Variables).ic_swappedToOther,
-    text: 'common:Swapped_to_other_token',
-  },
-  {
-    id: '4',
-    image: Images(Variables).ic_swappedFromOther,
-    text: 'common:Swapped_from_other_token',
-  },
-  {
-    id: '5',
-    image: Images(Variables).ic_sign,
-    text: 'common:Sign',
-  },
+  // {
+  //   id: '3',
+  //   image: Images(Variables).ic_swappedToOther,
+  //   text: 'common:Swapped_to_other_token',
+  // },
+  // {
+  //   id: '4',
+  //   image: Images(Variables).ic_swappedFromOther,
+  //   text: 'common:Swapped_from_other_token',
+  // },
+  // {
+  //   id: '5',
+  //   image: Images(Variables).ic_sign,
+  //   text: 'common:Sign',
+  // },
 ];
 
 const fileRecoveryOptions = [
@@ -421,21 +331,21 @@ const recoveryOptions = [
     description: 'common:Use_the_secret_recovery_phrase_you_have_saved',
     image: Images(Variables).ic_secretPhraseWithGradientBg,
   },
-  {
-    id: 3,
-    title: 'common:Social_Recovery',
-    tagText: 'common:PRO',
-    description: 'common:Ask_guarantors_to_approve_your_recovery_requests',
-    image: Images(Variables).ic_socialRecovery,
-  },
-  {
-    id: 4,
-    title: 'common:Geo_Recovery',
-    tagText: 'common:PRO',
-    description:
-      'common:Go_to_the_3_locations_you_set_before_and_unlock_all_of_them',
-    image: Images(Variables).ic_geoRecovery,
-  },
+  // {
+  //   id: 3,
+  //   title: 'common:Social_Recovery',
+  //   tagText: 'common:PRO',
+  //   description: 'common:Ask_guarantors_to_approve_your_recovery_requests',
+  //   image: Images(Variables).ic_socialRecovery,
+  // },
+  // {
+  //   id: 4,
+  //   title: 'common:Geo_Recovery',
+  //   tagText: 'common:PRO',
+  //   description:
+  //     'common:Go_to_the_3_locations_you_set_before_and_unlock_all_of_them',
+  //   image: Images(Variables).ic_geoRecovery,
+  // },
 ];
 
 const importWalletOptions = [
@@ -524,7 +434,7 @@ const SettingData = [
         title: 'setting:currency',
         rightText: 'setting:usd',
         image: Images(Variables).ic_right,
-        redirect: 'Currency',
+        // redirect: 'Currency',
       },
       {
         id: 2,
@@ -532,15 +442,15 @@ const SettingData = [
         title: 'setting:language',
         rightText: 'setting:en',
         image: Images(Variables).ic_right,
-        redirect: 'Language',
+        // redirect: 'Language',
       },
-      {
-        id: 3,
-        type: 'common:types.toggle',
-        title: 'setting:analytics',
-        description: 'setting:analytics_desc',
-        toggleType: 'common:toggle_types.analytics',
-      },
+      // {
+      //   id: 3,
+      //   type: 'common:types.toggle',
+      //   title: 'setting:analytics',
+      //   description: 'setting:analytics_desc',
+      //   toggleType: 'common:toggle_types.analytics',
+      // },
       {
         id: 4,
         type: 'common:types.cmsPage',
@@ -593,7 +503,7 @@ const SecurityData = [
         type: 'common:types.viewInfo',
         title: 'setting:autolock_timer',
         image: Images(Variables).ic_right,
-        redirect: 'AutolockTimer',
+        redirect: 'AutoLockTimer',
       },
     ],
   },
@@ -767,36 +677,6 @@ const SelectNetworkListData = [
         subTitle: '',
         amount: 1.4,
         usdAmount: 84,
-        tokenContractAddress: '0xEEa85fdf0b05D1E0107A61b4b4DB1f345854B952',
-        providerNetworkRPC_URL:
-          'wss://eth-goerli.g.alchemy.com/v2/barNHxwKcvdxJuDoKlbor5qx6mhT2C_O',
-        providerNetworkRPC_Network_Name: 'goerli',
-        explorerURL: 'https://goerli.etherscan.io',
-        decimal: 1,
-      },
-      {
-        id: '3',
-        image: Images(Variables).ic_binance,
-        title: 'Binance smart chain',
-        networkName: '',
-        subTitle: '',
-        amount: 84,
-        usdAmount: 6.5,
-        tokenContractAddress: '0xEEa85fdf0b05D1E0107A61b4b4DB1f345854B952',
-        providerNetworkRPC_URL:
-          'wss://eth-goerli.g.alchemy.com/v2/barNHxwKcvdxJuDoKlbor5qx6mhT2C_O',
-        providerNetworkRPC_Network_Name: 'goerli',
-        explorerURL: 'https://goerli.etherscan.io',
-        decimal: 1,
-      },
-      {
-        id: '4',
-        image: Images(Variables).ic_polygon,
-        title: 'Polygon',
-        networkName: '',
-        subTitle: '',
-        amount: 96,
-        usdAmount: 63.2,
         tokenContractAddress: '0xEEa85fdf0b05D1E0107A61b4b4DB1f345854B952',
         providerNetworkRPC_URL:
           'wss://eth-goerli.g.alchemy.com/v2/barNHxwKcvdxJuDoKlbor5qx6mhT2C_O',
@@ -1145,14 +1025,14 @@ const NotificationListData = [
   },
   {
     id: '2',
-    title: '@paul2 has removed you from the guardians of Bubbble',
+    title: '@paul2 has removed you from the guarantors of Bubbble',
     timeAgo: '2d ago',
     isExpired: false,
     status: 'read',
   },
   {
     id: '3',
-    title: 'All of the guardians have approved the recovery requests',
+    title: 'All of the guarantors have approved the recovery requests',
     timeAgo: '5d ago',
     isExpired: false,
     status: 'read',
@@ -1160,7 +1040,7 @@ const NotificationListData = [
   {
     id: '4',
     title:
-      'Some of the guardians did not approve or respond to the recovery requests',
+      'Some of the guarantors did not approve or respond to the recovery requests',
     timeAgo: '6d ago',
     isExpired: false,
     status: 'read',
@@ -1175,14 +1055,14 @@ const NotificationListData = [
   },
   {
     id: '6',
-    title: '@paul has added you as a guardian of a PRO account',
+    title: '@paul has added you as a guarantor of a PRO account',
     timeAgo: '8d ago',
     isExpired: false,
     status: 'read',
   },
   {
     id: '7',
-    title: 'All of the guardians have approved the recovery requests',
+    title: 'All of the guarantors have approved the recovery requests',
     timeAgo: '9d ago',
     isExpired: false,
     status: 'read',
@@ -1190,7 +1070,7 @@ const NotificationListData = [
   {
     id: '8',
     title:
-      'Some of the guardians did not approve or respond to the recovery requests',
+      'Some of the guarantors did not approve or respond to the recovery requests',
     timeAgo: '10d ago',
     isExpired: false,
     status: 'read',
@@ -1246,6 +1126,21 @@ const ProfileImagesList = [
   },
 ] as SortingItem[];
 
+const AutoLockTimer = [
+  {
+    time: 2,
+  },
+  {
+    time: 5,
+  },
+  {
+    time: 10,
+  },
+  {
+    time: 30,
+  },
+];
+
 export const mockData = {
   networksListArray,
   activityListArray,
@@ -1274,6 +1169,7 @@ export const mockData = {
   ImportAccountsOption,
   CreateSubAccountsOption,
   ProfileImagesList,
+  AutoLockTimer,
 };
 
 export default mockData;

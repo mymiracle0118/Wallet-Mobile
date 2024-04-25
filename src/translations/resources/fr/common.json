@@ -1,8 +1,8 @@
 {
   "appName": {
-    "full": "Shuttle wallet",
-    "short": "Shuttle",
-    "initials": "SW"
+    "full": "Star Key wallet",
+    "short": "Star Key",
+    "initials": "SK"
   },
   "Congratulations": "Congratulations",
   "bioMetrics_fallBackText": "Enter password",
@@ -56,13 +56,13 @@
   "iCloud": "iCloud",
   "gDrive": "Google Drive",
   "Device": "Device",
-  "Guardian": "Guardian",
+  "Guardian": "Guarantor",
   "Use_the_backup_files_from_iCloud_device_and_a_guarantor": "Use the backup files from iCloud, device and a guarantor",
   "Use_the_backup_files_from_gDrive_device_and_a_guarantor": "Use the backup files from google Drive, device and a guarantor",
   "Secret_Phrase_Recovery": "Secret Phrase Recovery",
   "Use_the_secret_recovery_phrase_you_have_saved": "Use the secret recovery phrase you have saved",
   "Social_Recovery": "Social Recovery",
-  "Ask_guarantors_to_approve_your_recovery_requests": "Ask guardians to approve your recovery requests",
+  "Ask_guarantors_to_approve_your_recovery_requests": "Ask guarantors to approve your recovery requests",
   "Geo_Recovery": "Geo Recovery",
   "Go_to_the_3_locations_you_set_before_and_unlock_all_of_them": "Go to the 3 locations you set before and unlock all of them",
   "Store_your_key_backups_in_3_different_locations": "Store your key backups in 3 different locations",
@@ -78,7 +78,7 @@
   "BackUpRestoreWalletUsingIcloud_description": "Backup your key to iCloud and restore to any device that is signed in to your iCloud account",
   "BackUpRestoreWalletUsingIcloud_description1": "Backup your key to Google drive and restore to any device that is signed in to your Google drive account",
   "BackUpRestoreWalletUsingDevice_description": "Save your key backup as a file. You will need to import this backup to access your account on a new device",
-  "BackUpRestoreWalletUsingGuarantor_description": "Share one of the files to someone you trust and ask him/her to keep it for you. You will be asked to import the file when in need of a recovery\n\nThe guardian do not have access to your accounts and assets",
+  "BackUpRestoreWalletUsingGuarantor_description": "Share one of the files to someone you trust and ask him/her to keep it for you. You will be asked to import the file when in need of a recovery\n\nThe guarantor do not have access to your accounts and assets",
   "add": "Add",
   "cancel": "Cancel",
   "from": "From",
@@ -116,7 +116,7 @@
   "invalid_file": "Invalid file",
   "file_not_found!": "File not found!",
   "Seed_recovery_failed_try_with_valid_files": "Seed recovery failed, try with valid files!",
-  "File_decryption_failed_try_with_valid_password!": "File decryption failed, try with valid password!",
+  "File_decryption_failed_try_with_valid_password_and_file": "Invalid File password or incorrect file(s) provided. Please double-check and try again.",
   "Recovery_Folder_does_not_exist": "Recovery Folder does not exist",
   "Recovery_File_does_not_exist": "Recovery File does not exist",
   "Google_login_failed": "Google login failed!",
@@ -190,5 +190,7 @@
   "address": "Address",
   "Hide_Now": "Hide Now",
   "the_account_is_hidden": "The account is hidden",
-  "wallet_address": "Wallet Address"
+  "wallet_address": "Wallet Address",
+  "upload_from_gallery": "Upload from gallery",
+  "no_qr_found": "No QR code detected"
 }

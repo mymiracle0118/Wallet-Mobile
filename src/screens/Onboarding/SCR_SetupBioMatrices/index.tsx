@@ -47,9 +47,9 @@ export default function SetupBioMatrices() {
           text={t('onBoarding:setupFaceID_EnableId')}
           onPress={async () => {
             // Check if biometric support is available
-            const supported = await BiometricService.checkBiometricSupport();
-
-            if (!supported) {
+            const bioMetricSupportResponse =
+              await BiometricService.checkBiometricSupport();
+            if (!bioMetricSupportResponse.supported) {
               showAlert(
                 t('onBoarding:secure_application_name_wallet'),
                 t(

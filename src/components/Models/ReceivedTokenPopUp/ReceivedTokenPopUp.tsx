@@ -62,6 +62,8 @@ const ReceivedTokenPopUp = ({}: Props) => {
       animationIn={'fadeIn'}
       animationOut={'fadeOut'}
       isVisible={data?.isVisible}
+      useNativeDriver={true}
+      hideModalContentWhileAnimating={true}
     >
       <View style={style(Gutters, Layout, Colors).container}>
         {!isFromAddToken && iconPath && (
@@ -79,7 +81,7 @@ const ReceivedTokenPopUp = ({}: Props) => {
         ) : isFromAddToken ? (
           <View style={style(Gutters, Layout, Colors).textImage}>
             <Text style={[Fonts.titleMedium, { color: Colors.blackGray }]}>
-              {`${popupTitle?.split(/\r?\n/)[1][0]}`}
+              {String(popupTitle?.split(/\r?\n/)[1]?.[0] || '')}
             </Text>
           </View>
         ) : (
@@ -136,9 +138,7 @@ const ReceivedTokenPopUp = ({}: Props) => {
               onPressOk();
             }, 500);
           }}
-          backGroundColor={
-            okButtonType === 'primary' ? Colors.primary : Colors.blackGray
-          }
+          colors={okButtonType !== 'primary' && Colors.disableGradientColor}
           btnStyle={style(Gutters, Layout, Colors).btnOk}
           btnTextColor={
             okButtonType === 'primary' ? Colors.white : Colors.textError

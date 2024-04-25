@@ -16,7 +16,6 @@ import { ExistingNetworksItem } from 'types/apiResponseInterfaces';
 
 import HorizontalSeparatorView from '../HorizontalSeparatorView/HorizontalSeparatorView';
 import SearchInputBox from '../SearchInputBox/SearchInputBox';
-// import WalletFilterControlView from '../WalletFilterControlView/WalletFilterControlView';
 import WalletTokenItem from '../WalletTokenItem/WalletTokenItem';
 import { TokenListHandleType } from './TokensListView.types';
 
@@ -59,7 +58,6 @@ const TokensListView = forwardRef<TokenListHandleType, Props>((props, ref) => {
       obj,
       type: 'sorting' | 'filter' | 'clearSorting' | 'clearFilter',
     ) {
-      console.log('obj', obj, 'type', type);
       if (type === 'sorting') {
         setSortObj(obj);
       } else if (type === 'filter') {
@@ -92,9 +90,6 @@ change, allowing for dynamic updates to the 'filterData' state.
     }
 
     if (sortObj?.id === '1') {
-      // tokenListCopy = tokenListCopy.sort((a, b) =>
-      //   a.subTitle.localeCompare(b.subTitle),
-      // );
       tokenListCopy = tokenListCopy.sort((a, b) => {
         if (a.isFavorite && !b.isFavorite) {
           return -1; // `a` comes before `b`
@@ -140,7 +135,6 @@ change, allowing for dynamic updates to the 'filterData' state.
         onChangeText={text => {
           setSearchText(text);
         }}
-        clearButtonMode="always"
         rightIcon={searchRightIcon}
         onPressSort={onPressSort}
       />

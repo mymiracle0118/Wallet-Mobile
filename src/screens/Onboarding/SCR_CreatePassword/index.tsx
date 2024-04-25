@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-duplicate-props */
 import React from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Keyboard, KeyboardAvoidingView, Platform, View } from 'react-native';
@@ -49,6 +50,7 @@ const CreatePassword: React.FC<any> = () => {
     control,
     handleSubmit,
     setValue,
+    resetField,
     formState: { errors, isValid },
   } = useForm<FormData>({
     defaultValues: {
@@ -97,10 +99,9 @@ const CreatePassword: React.FC<any> = () => {
                   rules={{
                     required: true,
                   }}
-                  render={({ field: { onChange, value, onBlur } }) => (
+                  render={({ field: { value, onBlur } }) => (
                     <>
                       <InputBox
-                        onChangeText={onChange}
                         isShowError={errors?.password?.message ? true : false}
                         errMessage={errors?.password?.message}
                         placeholder={t('onBoarding:password')}
@@ -111,14 +112,24 @@ const CreatePassword: React.FC<any> = () => {
                         maxLength={MaximumPasswordCharacters}
                         backGroundColor={Colors.blackGray}
                         onEndEditing={() => {
-                          setValue('password', value, {
+                          setValue(
+                            'password',
+                            value.replace(/\s/g, '').trim(),
+                            {
+                              shouldValidate: true,
+                            },
+                          );
+                        }}
+                        onChangeTextValue={text => {
+                          setValue('password', text.replace(/\s/g, '').trim(), {
                             shouldValidate: true,
                           });
+                          resetField('confirmPassword');
                         }}
                       />
                       {!errors?.password?.message && !isValid && (
                         <ErrorView
-                          text={t('onBoarding:min_8_characters')}
+                          text={t('onBoarding:min_9_characters')}
                           textColor={applyOpacityToHexColor(
                             Colors.textGray600,
                             0.6,
@@ -139,9 +150,8 @@ const CreatePassword: React.FC<any> = () => {
                   rules={{
                     required: true,
                   }}
-                  render={({ field: { onChange, onBlur, value } }) => (
+                  render={({ field: { onBlur, value } }) => (
                     <InputBox
-                      onChangeText={onChange}
                       isShowError={
                         errors?.confirmPassword?.message ? true : false
                       }
@@ -159,6 +169,15 @@ const CreatePassword: React.FC<any> = () => {
                           shouldValidate: true,
                         });
                       }}
+                      onChangeTextValue={text => {
+                        setValue(
+                          'confirmPassword',
+                          text.replace(/\s/g, '').trim(),
+                          {
+                            shouldValidate: true,
+                          },
+                        );
+                      }}
                     />
                   )}
                 />
@@ -174,10 +193,11 @@ const CreatePassword: React.FC<any> = () => {
                     text={t('common:Next')}
                     onPress={handleSubmit(onSubmit)}
                     btnStyle={Layout.fill}
-                    backGroundColor={
-                      errors?.password || errors?.confirmPassword || !isValid
-                        ? Colors.blackGray
-                        : Colors.primary
+                    colors={
+                      (errors?.password ||
+                        errors?.confirmPassword ||
+                        !isValid) &&
+                      Colors.disableGradientColor
                     }
                     btnTextColor={
                       errors?.password || errors?.confirmPassword || !isValid

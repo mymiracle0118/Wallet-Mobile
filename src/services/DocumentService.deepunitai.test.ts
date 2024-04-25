@@ -19,7 +19,6 @@ jest.mock('react-native-document-picker', () => ({
 }));
 
 // We are mocking the 'react-native-document-picker' module since the test environment is not capable of handling the native functionality provided by the module.
-// We are mocking the 'react-native-document-picker' module since the test environment is not capable of handling the native functionality provided by the module.
 describe('DocumentService', function () {
   // Reset all mocks before each test
   beforeEach(() => {
@@ -55,8 +54,6 @@ describe('DocumentService', function () {
   });
 });
 
-// Mocking the DocumentPicker module
-// Mocking the DocumentPicker module
 // Describe block represents a suite of tests
 describe('DocumentService', function () {
   // Reset all mocks before each test

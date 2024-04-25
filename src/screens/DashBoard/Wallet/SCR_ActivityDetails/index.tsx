@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Linking, Text, View } from 'react-native';
+import { BackHandler, Linking, Platform, Text, View } from 'react-native';
 import { captureScreen } from 'react-native-view-shot';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -12,6 +12,7 @@ import {
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
   ActivityItem,
+  AddressView,
   AmountView,
   BorderButton,
   DashBoardHeader,
@@ -40,7 +41,7 @@ import {
   getWalletAddress,
   getUserDataFromAddress,
 } from 'theme/Helper/common/Function';
-import { NetWorkType, NetWorkTypeId } from 'theme/Helper/constant';
+import { NetWorkType } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
 import ScreenNames from 'theme/screenNames';
 import { PopUpItem } from 'types/applicationInterfaces';
@@ -76,9 +77,25 @@ const ActivityDetails: React.FC<any> = () => {
     return state.userInfo.data.currentUser;
   });
 
+  const shouldShowBalance = useSelector(
+    (state: RootState) => state.userInfo.data.config.shouldHideAccountBalance,
+  );
+
   const [gasPrice, setGasPrice] = useState<number>(0);
   const [fromUserName, setFromUserName] = useState('');
   const [toUserName, setToUserName] = useState('');
+
+  useEffect(() => {
+    Platform.OS === 'android' &&
+      BackHandler.addEventListener('hardwareBackPress', backAction);
+    return () =>
+      Platform.OS === 'android' &&
+      BackHandler.removeEventListener('hardwareBackPress', backAction);
+  }, []);
+
+  const backAction = () => {
+    return true;
+  };
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('transitionEnd', () => {
@@ -89,6 +106,11 @@ const ActivityDetails: React.FC<any> = () => {
     return unsubscribe;
   }, [isScreenFocused]);
 
+  /**
+   * Define a function callOk which is intended to be executed when the user confirms cancel transaction
+   * Define a function onPressCancel which is intended to be executed when the user cancel transaction
+   * Define an object popUpLogOutObj that holds properties for a pop-up confirmation dialog
+   */
   const callOk = () => {
     cancelTransaction && cancelTransaction();
   };
@@ -162,19 +184,15 @@ const ActivityDetails: React.FC<any> = () => {
 
       switch (currentTokenInfo.networkName) {
         case NetWorkType.SUI:
+        case NetWorkType.SOL:
           networkFees = Number(
-            formatErc20Token(activityTransactionInfo?.gasPrice, 9),
+            formatErc20Token(activityTransactionInfo?.gasPrice ?? '0', 9),
           );
           break;
         case NetWorkType.APT:
           networkFees = Number(
             formatErc20Token(activityTransactionInfo?.gasPrice, 8) *
               activityTransactionInfo?.gasUsed,
-          );
-          break;
-        case NetWorkType.SOL:
-          networkFees = Number(
-            formatErc20Token(activityTransactionInfo?.gasPrice, 9),
           );
           break;
         case NetWorkType.SUP:
@@ -231,22 +249,24 @@ const ActivityDetails: React.FC<any> = () => {
     };
   }, []);
 
+  // capture the current screen as an image
   const onImageSave = useCallback(() => {
     captureScreen({
       fileName: t('wallet:qr_code_file_name'),
       format: 'png',
       quality: 1,
       result: 'tmpfile',
-    }).then(async uri => {
-      // Logic to handle the captured image URI
-      try {
-        const response = await CameraRoll.save(uri, { type: 'photo' });
-        console.log(response);
-        response && showToast('success', t('common:saved_to_gallery'));
-      } catch (error) {
-        showToast('error', t('common:error_saved_to_gallery'));
-      }
-    });
+    })
+      .then(async uri => {
+        // Logic to handle the captured image URI
+        try {
+          const response = await CameraRoll.saveToCameraRoll(uri, 'photo');
+          response && showToast('success', t('common:saved_to_gallery'));
+        } catch (error) {
+          showToast('error', t('common:error_saved_to_gallery'));
+        }
+      })
+      .catch(e => console.error(e));
   }, []);
 
   const getFormattedWalletAddress = () => {
@@ -255,7 +275,8 @@ const ActivityDetails: React.FC<any> = () => {
       currentTokenInfo?.isEVMNetwork,
     );
   };
-  const fromToDetails = () => {
+
+  const fromAndToDetails = () => {
     return (
       <>
         {activityTransactionInfo?.from && (
@@ -264,12 +285,9 @@ const ActivityDetails: React.FC<any> = () => {
             <View
               style={[Layout.fill, Layout.rowCenter, Layout.justifyContentEnd]}
             >
-              <BorderButton
+              <AddressView
                 text={formatAddress(activityTransactionInfo?.from, 'short')}
-                onPress={() => {}}
-                btnStyle={style(Gutters).addressBtn}
-                textStyle={Fonts.textSmallTinyWhiteMedium}
-                disabled={true}
+                walletAddress={activityTransactionInfo?.from}
               />
 
               {fromUserName && (
@@ -299,12 +317,9 @@ const ActivityDetails: React.FC<any> = () => {
                   Layout.justifyContentEnd,
                 ]}
               >
-                <BorderButton
+                <AddressView
                   text={formatAddress(activityTransactionInfo?.to, 'short')}
-                  onPress={() => {}}
-                  btnStyle={style(Gutters).addressBtn}
-                  textStyle={Fonts.textSmallTinyWhiteMedium}
-                  disabled={true}
+                  walletAddress={activityTransactionInfo?.to}
                 />
 
                 {toUserName && (
@@ -350,6 +365,7 @@ const ActivityDetails: React.FC<any> = () => {
                 walletAddress={getFormattedWalletAddress()}
                 tokenType={currentTokenInfo?.title}
                 onPress={() => {}}
+                shouldShowBalance={shouldShowBalance}
               />
             )}
             <HorizontalSeparatorView spacing={Variables.MetricsSizes.tiny} />
@@ -382,23 +398,14 @@ const ActivityDetails: React.FC<any> = () => {
                 />
               </>
             )}
-            {fromToDetails()}
+            {fromAndToDetails()}
             <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
             {gasPrice > 0 &&
               getFormattedWalletAddress()?.toLowerCase() ===
                 activityTransactionInfo?.from?.toLowerCase() && (
                 <AmountView
                   title={t('common:network_fee')}
-                  amount={
-                    currentTokenInfo?.isEVMNetwork
-                      ? gasPrice
-                      : getRoundDecimalValue(
-                          gasPrice,
-                          currentTokenInfo?.networkId === NetWorkTypeId.SUP
-                            ? 6
-                            : 9,
-                        ) ?? '0'
-                  }
+                  amount={getRoundDecimalValue(gasPrice) ?? '0'}
                   tokenType={currentTokenInfo?.networkName}
                 />
               )}

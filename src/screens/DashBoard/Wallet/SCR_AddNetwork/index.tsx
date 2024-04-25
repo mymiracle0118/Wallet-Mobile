@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Keyboard, Text, View } from 'react-native';
+import { Keyboard, ScrollView, Text, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -11,6 +11,7 @@ import {
   HorizontalSeparatorView,
   InputBox,
   WalletTokenItem,
+  WarningView,
 } from 'components/index';
 import useDebounce from 'customHooks/useDebounce';
 import useUpdateEffect from 'customHooks/useUpdateEffect';
@@ -48,7 +49,7 @@ const AddNetwork = () => {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const dispatch = useDispatch();
 
-  const { Common, Fonts, Gutters, Layout, Colors } = useTheme();
+  const { Common, Fonts, Gutters, Colors } = useTheme();
 
   const [isChainURLValid, setIsChainURLValid] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ExistingNetworksItem>({});
@@ -88,13 +89,13 @@ const AddNetwork = () => {
     Keyboard.dismiss();
 
     const checkChainId = obj =>
-      obj.providerNetworkRPC_Network_Name == data.chainId;
+      obj.providerNetworkRPC_URL.trim() === data.networkUrl.trim();
     if (!Object.values(tokensList).some(checkChainId)) {
       const popUpMaxAmountSendObj = {
         isVisible: true,
         isFromAddToken: true,
         popupTitle: t('wallet:You_have_added_token', {
-          token: getValues().networkName,
+          token: getValues().networkName.trim(),
         }),
         buttonOkText: t('common:Great'),
         okButtonType: 'primary',
@@ -124,12 +125,12 @@ const AddNetwork = () => {
     }
   }, [debouncedValue]);
 
+  // check RPC Url in EthersService and get chain data
   const checkRPCUrl = async (url: string) => {
     try {
       const chainData = await EthersService()
         .getNetworkInfoFromUrl(url)
         .getNetwork();
-      console.log('chainData', chainData);
       if (chainData?.name && chainData?.name !== 'unknown') {
         setValue('networkName', chainData.name.toUpperCase(), {
           shouldValidate: true,
@@ -159,16 +160,16 @@ const AddNetwork = () => {
   const createTokenInfo = async () => {
     const shortName = generateRandomString(6);
     const tokenObject = {
-      title: getValues().networkName,
+      title: getValues().networkName.trim(),
       shortName: shortName,
-      subTitle: getValues().networkName,
+      subTitle: getValues().networkName.trim(),
       amount: '0.0',
       usdAmount: '0.0',
       networkId: generateRandomString(3),
-      networkName: getValues().networkName,
+      networkName: getValues().networkName.trim(),
       tokenType: 'Native',
-      providerNetworkRPC_URL: getValues().networkUrl,
-      providerNetworkRPC_Network_Name: Number(getValues().chainId),
+      providerNetworkRPC_URL: getValues().networkUrl.trim(),
+      providerNetworkRPC_Network_Name: Number(getValues().chainId.trim()),
       isFavorite: false,
       isEVMNetwork: true,
       isCustom: true,
@@ -180,7 +181,6 @@ const AddNetwork = () => {
         getWalletAddress(defaultNetwork),
         tokenObject,
       );
-      console.log('balance', balance);
       setSelectedItem({ ...tokenObject, amount: balance });
     } catch (error) {
       console.log('balance error', error);
@@ -189,10 +189,7 @@ const AddNetwork = () => {
 
   return (
     <View
-      style={[
-        Common.containerFillWithSmallHPadding,
-        style(Gutters, Layout, Colors).container,
-      ]}
+      style={[Common.containerFillWithSmallHPadding, style(Colors).container]}
     >
       <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
       <HeaderWithTitleAndSubTitle
@@ -204,113 +201,114 @@ const AddNetwork = () => {
         shouldHideBack={true}
         isNextDisabled={!isChainURLValid || !isValid}
       />
-      <Text
-        style={[
-          Fonts.textOpacityRegular,
-          style(Gutters, Layout, Colors).subTitle,
-        ]}
-      >
+      <Text style={[Fonts.textOpacityRegular, style(Colors).subTitle]}>
         {t('wallet:how_can_i_find')}
       </Text>
-
       <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
 
-      <Controller
-        control={control}
-        name="networkUrl"
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value, onBlur } }) => (
-          <>
+      <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+        <Controller
+          control={control}
+          name="networkUrl"
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value, onBlur } }) => (
+            <>
+              <InputBox
+                onChangeText={onChange}
+                isShowError={errors?.networkUrl?.message ? true : false}
+                errMessage={errors?.networkUrl?.message}
+                placeholder={t('wallet:network_url')}
+                onBlur={onBlur}
+                value={value}
+                backGroundColor={Colors.blackGray}
+                onChangeValue={prop => {
+                  if (prop.nativeEvent.text !== addNetworkUrl) {
+                    resetField('chainId');
+                    resetField('networkName');
+                    setIsChainURLValid(false);
+                    setSelectedItem({});
+                  }
+                  setValue('networkUrl', prop.nativeEvent.text, {
+                    shouldValidate: true,
+                  });
+                  setAddNetworkUrl(prop.nativeEvent.text);
+                }}
+              />
+              <Text
+                style={[Fonts.textTinyDescriptionRegular, Gutters.tinyTMargin]}
+              >
+                {t('wallet:network_url_info')}
+              </Text>
+            </>
+          )}
+        />
+
+        <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
+
+        <Controller
+          control={control}
+          name="networkName"
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value, onBlur } }) => (
+            <>
+              <InputBox
+                onChangeText={onChange}
+                isShowError={errors?.networkName?.message ? true : false}
+                errMessage={errors?.networkName?.message}
+                placeholder={t('wallet:name')}
+                onBlur={onBlur}
+                value={value}
+                backGroundColor={Colors.blackGray}
+                editable={isChainURLValid}
+                maxLength={MaximumPasswordCharacters}
+                onChangeValue={prop => {
+                  setValue('networkName', prop.nativeEvent.text, {
+                    shouldValidate: true,
+                  });
+                  createTokenInfo();
+                }}
+              />
+            </>
+          )}
+        />
+
+        <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
+
+        <Controller
+          control={control}
+          name="chainId"
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, value, onBlur } }) => (
             <InputBox
               onChangeText={onChange}
-              isShowError={errors?.networkUrl?.message ? true : false}
-              errMessage={errors?.networkUrl?.message}
-              placeholder={t('wallet:network_url')}
-              onBlur={onBlur}
+              placeholder={t('wallet:chain_id_decimal')}
               value={value}
               backGroundColor={Colors.blackGray}
-              onChangeValue={prop => {
-                if (prop.nativeEvent.text !== addNetworkUrl) {
-                  resetField('chainId');
-                  resetField('networkName');
-                  setIsChainURLValid(false);
-                  setSelectedItem({});
-                }
-                setValue('networkUrl', prop.nativeEvent.text, {
-                  shouldValidate: true,
-                });
-                setAddNetworkUrl(prop.nativeEvent.text);
-              }}
-            />
-            <Text
-              style={[Fonts.textTinyDescriptionRegular, Gutters.tinyTMargin]}
-            >
-              {t('wallet:network_url_info')}
-            </Text>
-          </>
-        )}
-      />
-
-      <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
-
-      <Controller
-        control={control}
-        name="networkName"
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value, onBlur } }) => (
-          <>
-            <InputBox
-              onChangeText={onChange}
-              isShowError={errors?.networkName?.message ? true : false}
-              errMessage={errors?.networkName?.message}
-              placeholder={t('wallet:name')}
+              editable={false}
+              isShowError={errors?.chainId?.message ? true : false}
+              errMessage={errors?.chainId?.message}
               onBlur={onBlur}
-              value={value}
-              backGroundColor={Colors.blackGray}
-              editable={isChainURLValid}
-              maxLength={MaximumPasswordCharacters}
-              onChangeValue={prop => {
-                setValue('networkName', prop.nativeEvent.text, {
-                  shouldValidate: true,
-                });
-                createTokenInfo();
-              }}
             />
-          </>
+          )}
+        />
+
+        <Text style={[Fonts.textTinyDescriptionRegular, Gutters.tinyTMargin]}>
+          {t('wallet:chain_id_decimal_info')}
+        </Text>
+        <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
+        {isValid && selectedItem ? (
+          <WalletTokenItem item={selectedItem} />
+        ) : (
+          <WarningView warningArray={[t('wallet:add_network_note')]} />
         )}
-      />
-
-      <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
-
-      <Controller
-        control={control}
-        name="chainId"
-        rules={{
-          required: true,
-        }}
-        render={({ field: { onChange, value, onBlur } }) => (
-          <InputBox
-            onChangeText={onChange}
-            placeholder={t('wallet:chain_id_decimal')}
-            value={value}
-            backGroundColor={Colors.blackGray}
-            editable={false}
-            isShowError={errors?.chainId?.message ? true : false}
-            errMessage={errors?.chainId?.message}
-            onBlur={onBlur}
-          />
-        )}
-      />
-
-      <Text style={[Fonts.textTinyDescriptionRegular, Gutters.tinyTMargin]}>
-        {t('wallet:chain_id_decimal_info')}
-      </Text>
-      <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
-      {isValid && selectedItem && <WalletTokenItem item={selectedItem} />}
+        <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
+      </ScrollView>
     </View>
   );
 };

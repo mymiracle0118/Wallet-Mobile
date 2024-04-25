@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { Image, Pressable, SectionList, Text, View } from 'react-native';
 import { scale } from 'react-native-size-scaling';
@@ -38,6 +39,11 @@ const Settings: React.FC<any> = () => {
     return state.wallet.data.networkEnvironment;
   });
 
+  /**
+   * Define a function callOk which is intended to be executed when the user confirms logout the account
+   * Define a function onPressCancel which is intended to be executed when the user cancels logout the account
+   * Define an object popUpLogOutObj that holds properties for a pop-up confirmation dialog
+   */
   const callOk = () => {
     BalanceChangeObservers().removeListeners();
     USDConversionService().removeListeners();
@@ -68,7 +74,7 @@ const Settings: React.FC<any> = () => {
     }
   };
 
-  const renderItem = ({ item, index, section }): React.JSX.Element => {
+  const renderSettingItem = ({ item, index, section }): React.JSX.Element => {
     return (
       <Pressable
         testID="button"
@@ -83,12 +89,12 @@ const Settings: React.FC<any> = () => {
             });
         }}
       >
-        {rawRender(item)}
+        {rawRenderSettingItem(item)}
       </Pressable>
     );
   };
 
-  const rawRender = item => {
+  const rawRenderSettingItem = item => {
     switch (t(item.type)) {
       case t('common:types.viewInfo'):
         return (
@@ -118,15 +124,6 @@ const Settings: React.FC<any> = () => {
               >
                 {t(item.rightText)}
               </Text>
-              <Image
-                testID="right_image"
-                style={{
-                  height: scale(12),
-                  width: scale(12),
-                }}
-                resizeMode="contain"
-                source={item.image}
-              />
             </View>
           </>
         );
@@ -218,8 +215,8 @@ const Settings: React.FC<any> = () => {
 
       <SectionList
         sections={mockData.SettingData}
-        // keyExtractor={(item, index) => item + index}
-        renderItem={renderItem}
+        keyExtractor={(item, index) => `${item.id + index}`}
+        renderItem={renderSettingItem}
         renderSectionHeader={() => (
           <View style={style(Gutters, Layout).sectionHeader} />
         )}
@@ -235,7 +232,6 @@ const Settings: React.FC<any> = () => {
         <Text
           style={[
             Fonts.textTinyDescriptionLightRegular,
-            // eslint-disable-next-line react-native/no-inline-styles
             { textAlign: 'center' },
           ]}
         >

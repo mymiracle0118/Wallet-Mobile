@@ -1,6 +1,5 @@
 import React from 'react';
 import { Image, Pressable, Text } from 'react-native';
-import { scale } from 'react-native-size-scaling';
 
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
@@ -13,22 +12,20 @@ type Props = {
 };
 
 const BasicAccountsOptionsRawItem = (props: Props) => {
-  const { Gutters, Layout, Fonts, Colors } = useTheme();
+  const { Gutters, Layout, Fonts } = useTheme();
 
   const { item, onPress } = props;
 
   return (
     <Pressable
+      testID="basic-accounts-options-raw-item-pressable"
       onPress={onPress}
-      style={style(Gutters, Layout, Colors).rawRootContainer}
+      style={style(Gutters, Layout).rawRootContainer}
     >
       <Text style={Fonts.textSmallBoldWhite}>{t(item.title)}</Text>
       <Image
         testID="right_image"
-        style={{
-          height: scale(12),
-          width: scale(12),
-        }}
+        style={style(Gutters, Layout).image}
         resizeMode="contain"
         source={item.image}
       />

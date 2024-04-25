@@ -1,5 +1,4 @@
-import RNFS, { ReadDirItem } from 'react-native-fs';
-
+import * as RNFS from '@dr.pogodin/react-native-fs';
 import AndroidDownloadFileManager from 'nativeBridge/AndroidDownloadFileManager';
 
 export const DocumentDirectoryPath = RNFS.DocumentDirectoryPath;
@@ -26,10 +25,33 @@ const FileManagerService = () => {
   const moveFile = async (filePath: string, targetFilePath: string) => {
     try {
       const isFileExists = await RNFS.exists(targetFilePath);
+      console.log('isFileExists', isFileExists);
       if (isFileExists) {
-        await RNFS.unlink(targetFilePath);
+        return;
       }
       await RNFS.moveFile(filePath, targetFilePath);
+    } catch (error) {
+      throw new Error(`Error moving file: ${error.message}`);
+    }
+  };
+
+  const copyFile = async (filePath: string, targetFilePath: string) => {
+    try {
+      const isFileExists = await RNFS.exists(targetFilePath);
+      console.log('isFileExists', isFileExists);
+      if (isFileExists) {
+        return;
+      }
+      await RNFS.copyFile(filePath, targetFilePath);
+    } catch (error) {
+      throw new Error(`Error moving file: ${error.message}`);
+    }
+  };
+
+  const checkIsFileExists = async (targetFilePath: string) => {
+    try {
+      const isFileExists = await RNFS.exists(targetFilePath);
+      return isFileExists;
     } catch (error) {
       throw new Error(`Error moving file: ${error.message}`);
     }
@@ -74,9 +96,7 @@ const FileManagerService = () => {
     }
   };
 
-  const getFilesAndDirectories = async (
-    dirPath: string,
-  ): Promise<ReadDirItem[]> => {
+  const getFilesAndDirectories = async (dirPath: string): Promise<any[]> => {
     try {
       return await RNFS.readDir(dirPath);
     } catch (error) {
@@ -97,7 +117,6 @@ const FileManagerService = () => {
           reject(errorCode);
         },
         (responseMessage: string, responseCode: string) => {
-          console.log('Download response:', responseMessage, responseCode);
           resolve(responseCode);
         },
       );
@@ -113,6 +132,8 @@ const FileManagerService = () => {
     getFilesAndDirectories,
     moveFile,
     createFileInDownloadInAndroid,
+    checkIsFileExists,
+    copyFile,
   };
 };
 

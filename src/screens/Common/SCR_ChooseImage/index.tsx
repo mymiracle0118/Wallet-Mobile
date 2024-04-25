@@ -71,6 +71,7 @@ const ChooseImage = () => {
         data={mockData.ProfileImagesList}
         renderItem={renderAvatarItem}
         contentContainerStyle={Gutters.smallBPadding}
+        keyExtractor={item => item.image.toString()}
       />
     </View>
   );

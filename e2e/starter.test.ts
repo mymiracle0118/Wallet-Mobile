@@ -1,7 +1,7 @@
 import { by, device, expect, element, waitFor } from 'detox';
 import { NetWorkType } from 'theme/Helper/constant';
 
-describe('Shuttle', () => {
+describe('Wallet', () => {
   beforeAll(async () => {
     await device.launchApp({
       delete: false,
@@ -18,7 +18,7 @@ describe('Shuttle', () => {
       '0.0001',
     );
     // await runSendTokenFlow(
-    //   'BNB',
+    //   'ETH',
     //   '0x0510e015BfFf0152f938d06F811fA7612C9F83C9',
     //   '0.00001',
     // );

@@ -8,27 +8,28 @@ import useTheme from 'hooks/useTheme';
 import { style } from './styles';
 
 type Props = {
-  sliderValue: number;
   setSliderValue: Dispatch<SetStateAction<number>>;
   minValue: number;
+  values: any[];
 };
 
-const GradientSlider = ({ sliderValue, setSliderValue, minValue }: Props) => {
+const GradientSlider = ({ setSliderValue, minValue, values }: Props) => {
   const { Layout, Colors } = useTheme();
 
   return (
     <MultiSlider
       containerStyle={style(Layout, Colors).containerStyle}
       sliderLength={width - scale(70)}
-      min={sliderValue}
       trackStyle={style(Layout, Colors).trackStyle}
-      step={0.5}
+      step={values.length}
       onValuesChange={brightness => {
         setSliderValue(brightness[0] > minValue ? brightness[0] : minValue);
       }}
-      max={50}
+      optionsArray={values}
       colorGradient={Colors.primaryReversGradientColor}
       markerStyle={style(Layout, Colors).markerStyle}
+      allowOverlap
+      snapped
     />
   );
 };

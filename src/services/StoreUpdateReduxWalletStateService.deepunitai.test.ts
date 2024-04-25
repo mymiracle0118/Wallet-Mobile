@@ -31,8 +31,6 @@ jest.mock('store/wallet', () => ({
   updatePrivateKey: jest.fn(),
 }));
 
-// Mocking the store dispatch method
-
 // Mocking the wallet actions
 // Mocking the store dispatch method
 // Mocking the wallet actions
@@ -71,10 +69,16 @@ describe('StoreUpdateReduxWalletStateService', function () {
     const service = StoreUpdateReduxWalletStateService();
     const walletAddress = 'testAddress';
     const networkName = 'testNetwork';
-    await service.updateWalletAddressInStore(walletAddress, networkName);
+    const derivationIndex = '0';
+    await service.updateWalletAddressInStore(
+      walletAddress,
+      networkName,
+      derivationIndex,
+    );
     expect(updateWalletAddress).toHaveBeenCalledWith({
       walletAddress,
       networkName,
+      derivationIndex,
     });
     expect(store.dispatch).toHaveBeenCalledTimes(1);
   });

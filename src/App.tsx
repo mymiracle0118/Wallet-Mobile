@@ -5,13 +5,10 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { enableFreeze } from 'react-native-screens';
 import { Provider } from 'react-redux';
 
-import { ApolloProvider, ApolloClient } from '@apollo/client';
-import { loadErrorMessages, loadDevMessages } from '@apollo/client/dev';
 import * as Sentry from '@sentry/react-native';
 import { PersistGate } from 'redux-persist/lib/integration/react';
 import { injectStore } from 'theme/Helper/common/Function';
 
-import { getApolloClient } from './apollo/client';
 import ApplicationNavigator from './navigators/Application';
 import { store, persistor } from './store';
 import './translations';
@@ -34,9 +31,6 @@ if (Platform.OS === 'ios') {
 }
 
 if (__DEV__) {
-  // Adds messages only in a dev environment
-  loadDevMessages();
-  loadErrorMessages();
   console.disableYellowBox = true;
 }
 
@@ -45,30 +39,32 @@ Sentry.init({
   // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
   // We recommend adjusting this value in production.
   tracesSampleRate: 1.0,
+  _experiments: {
+    // The sampling rate for profiling is relative to TracesSampleRate.
+    // In this case, we'll capture profiles for 100% of transactions.
+    profilesSampleRate: 1.0,
+  },
 });
 
 LogBox.ignoreAllLogs(true);
 LogBox.ignoreLogs(['Require cycle']);
 
 const App = () => {
-  const client: ApolloClient<any> | any = getApolloClient();
   return (
     <SafeAreaProvider>
-      <ApolloProvider client={client}>
-        <Provider store={store}>
-          {/**
-           * PersistGate delays the rendering of the app's UI until the persisted state has been retrieved
-           * and saved to redux.
-           * The `loading` prop can be `null` or any react instance to show during loading (e.g. a splash screen),
-           * for example `loading={<SplashScreen />}`.
-           * @see https://github.com/rt2zz/redux-persist/blob/master/docs/PersistGate.md
-           */}
+      <Provider store={store}>
+        {/**
+         * PersistGate delays the rendering of the app's UI until the persisted state has been retrieved
+         * and saved to redux.
+         * The `loading` prop can be `null` or any react instance to show during loading (e.g. a splash screen),
+         * for example `loading={<SplashScreen />}`.
+         * @see https://github.com/rt2zz/redux-persist/blob/master/docs/PersistGate.md
+         */}
 
-          <PersistGate loading={null} persistor={persistor}>
-            <ApplicationNavigator />
-          </PersistGate>
-        </Provider>
-      </ApolloProvider>
+        <PersistGate loading={null} persistor={persistor}>
+          <ApplicationNavigator />
+        </PersistGate>
+      </Provider>
     </SafeAreaProvider>
   );
 };

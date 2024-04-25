@@ -5,6 +5,7 @@ export default function ({}: ThemeVariables) {
     background: {
       ic_backgroundLayer: require('./assets/images/ic_bg_texture.png'),
       ic_backgroundGradientLayer: require('./assets/images/ic_bg_gradient.png'),
+      ic_bg_welcome: require('./assets/images/ic_bg_welcome.png'),
       ic_backgroundGradientWalletLayer: require('./assets/images/ic_wallet_bg.png'),
       ic_files_recovery_bg: require('./assets/images/ic_files_recovery_bg.png'),
       ic_password_recovery_bg: require('./assets/images/ic_password_recovery_bg.png'),
@@ -13,6 +14,7 @@ export default function ({}: ThemeVariables) {
       ic_share_guardian_bg: require('./assets/images/ic_share_guardian_bg.png'),
     },
     ic_appLogo: require('./assets/images/ic_appLogo.png'),
+    ic_app_name: require('./assets/images/ic_app_name.png'),
     ic_back: require('./assets/images/ic_back.png'),
     ic_success_tick: require('./assets/images/ic_success_tick.png'),
     ic_error_tick: require('./assets/images/ic_error_tick.png'),
@@ -25,6 +27,7 @@ export default function ({}: ThemeVariables) {
     ic_supra: require('./assets/images/ic_supra.png'),
     ic_error: require('./assets/images/ic_error.png'),
     ic_copy: require('./assets/images/ic_copy.png'),
+    ic_copy_gray: require('./assets/images/ic_copy_gray.png'),
     ic_download: require('./assets/images/ic_download.png'),
     ic_mask: require('./assets/images/ic_mask.png'),
     ic_eye: require('./assets/images/ic_eye.png'),
@@ -71,7 +74,6 @@ export default function ({}: ThemeVariables) {
     ic_device: require('./assets/images/ic_device.png'),
     ic_guarantor: require('./assets/images/ic_guarantor.png'),
     ic_emoji_completed: require('./assets/images/ic_emoji_completed.png'),
-    ic_backUpWalletAvatarBg: require('./assets/images/ic_backUpWalletAvatarBg.png'),
     ic_address_book: require('./assets/images/ic_address_book.png'),
     ic_scan: require('./assets/images/ic_scan.png'),
     ic_verify: require('./assets/images/ic_verify.png'),
@@ -122,5 +124,7 @@ export default function ({}: ThemeVariables) {
     ic_avatar4: require('./assets/images/ic_avatar4.png'),
     ic_show_private_key: require('./assets/images/ic_show_private_key.png'),
     ic_edit_pen: require('./assets/images/ic_edit_pen.png'),
+    ic_gallery: require('./assets/images/ic_gallery.png'),
+    ic_collect: require('./assets/images/ic_collect.png'),
   };
 }

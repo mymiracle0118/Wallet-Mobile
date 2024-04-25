@@ -59,6 +59,8 @@ const AddToken = () => {
     return state.wallet.data.tokensList;
   });
 
+  const [envNetworkList, setEnvNetworkList] = useState([]);
+
   const walletAddress = useSelector((state: RootState) => {
     return state.wallet.data.walletAddress[state.userInfo.data.currentUserId];
   });
@@ -72,9 +74,10 @@ const AddToken = () => {
   });
 
   const selectedTokensList = useSelector((state: RootState) => {
-    return state.wallet.data.selectedTokensList[
-      state.userInfo.data.currentUserId
-    ];
+    return (
+      state.wallet.data.selectedTokensList[state.userInfo.data.currentUserId] ??
+      []
+    );
   });
 
   const networkEnvironment = useSelector((state: RootState) => {
@@ -91,25 +94,44 @@ const AddToken = () => {
   const [isAddEnable, setIsAddEnable] = useState(false);
 
   const [selectedItem, setSelectedItem] = useState<ExistingNetworksItem>({});
+  const [selectedTokenList, setSelectedTokenList] = useState([]);
 
   const tabs = ['common:tab_types.search', 'common:tab_types.custom_tokens'];
 
+  useEffect(() => {
+    // Filter the tokensList to get the list of tokens with the given network environment
+    const tempFilter = Object.values(tokensList).filter(item => {
+      // Check if the token type is Native or the environment type matches the given network environment
+      return (
+        (item.tokenType === 'Native' && !item.isCustom) ||
+        item.envType === networkEnvironment
+      );
+    });
+    // Set the environment network list to the filtered list
+    setEnvNetworkList(tempFilter);
+  }, [tokensList]);
+
   const getCustomTokenWithoutSelected = () => {
     let customTokenWithoutSelected = [];
-    for (const tokenObj of Object.values(tokensList)) {
+    // Filter out tokens that are not part of the selected tokens list
+    for (const tokenObj of envNetworkList) {
+      // Filter out tokens that are part of the selected tokens list
       if (
         !isWalletFromSeedPhase &&
         selectedTokensList.includes(defaultNetwork)
       ) {
+        // Filter out tokens that are not part of the selected tokens list
         if (tokenObj.isEVMNetwork && tokenObj.tokenType !== 'ERC20') {
           customTokenWithoutSelected.push(tokenObj);
         }
       }
+      // Filter out tokens that are part of the selected tokens list
       if (
         tokenObj.tokenType === 'Native' &&
         selectedTokensList.includes(tokenObj.shortName)
       ) {
-        let tempFilter = Object.values(tokensList).filter(
+        // Filter out tokens that are part of the selected tokens list
+        let tempFilter = envNetworkList.filter(
           item =>
             item.tokenType !== 'Native' &&
             item.networkName === tokenObj.networkName,
@@ -117,6 +139,7 @@ const AddToken = () => {
         customTokenWithoutSelected.push(...tempFilter);
       }
     }
+    // Filter out tokens that are not part of the selected tokens list
     let filterTokens = Object.values(customTokenWithoutSelected).filter(
       item => !selectedTokensList.includes(item.shortName),
     );
@@ -124,39 +147,44 @@ const AddToken = () => {
     return filterTokens;
   };
 
-  useEffect(() => {
+  useUpdateEffect(() => {
     let walletNetworkFiltering = [];
     let filterTokenList = [];
 
     if (isWalletFromSeedPhase) {
-      filterTokenList = Object.values(tokensList).filter(
+      filterTokenList = envNetworkList.filter(
         item =>
           item.tokenType === 'Native' &&
+          // item.isCustom !== true &&
           !selectedTokensList.includes(item.shortName),
       );
       filterTokenList = filterTokenList.concat(getCustomTokenWithoutSelected());
     } else {
       if (!selectedTokensList.length) {
-        filterTokenList = Object.values(tokensList).filter(
-          item => item.shortName === Object.keys(walletAddress)[0],
+        filterTokenList = envNetworkList.filter(
+          item =>
+            item.shortName === Object.keys(walletAddress)[0] &&
+            item.isCustom !== true,
         );
       } else {
         if (
           Object.keys(walletAddress)[0] === NetWorkType.SUP ||
           Object.keys(walletAddress)[0] === NetWorkType.APT
         ) {
-          filterTokenList = Object.values(tokensList).filter(
+          filterTokenList = envNetworkList.filter(
             item =>
               item.tokenType === 'Native' &&
               !selectedTokensList.includes(item.shortName) &&
               (item.networkName === NetWorkType.SUP ||
-                item.networkName === NetWorkType.APT),
+                item.networkName === NetWorkType.APT) &&
+              item.isCustom !== true,
           );
           let filterArrayForGetErc20TokenWhoseNativeNetworkEnabled =
-            Object.values(tokensList).filter(
+            envNetworkList.filter(
               item =>
                 item.tokenType !== 'Native' &&
-                selectedTokensList.includes(item.networkName),
+                selectedTokensList.includes(item.networkName) &&
+                item.isCustom !== true,
             );
           let filterTokenWhoseAlreadyAddedInSelectedList = Object.values(
             filterArrayForGetErc20TokenWhoseNativeNetworkEnabled,
@@ -172,13 +200,13 @@ const AddToken = () => {
 
     walletNetworkFiltering = [
       {
-        title: 'wallet:all',
+        title: filterTokenList.length ? 'wallet:all' : t('common:no_token_yet'),
         data: filterTokenList,
       },
     ];
 
     setAllNetworkList(walletNetworkFiltering);
-  }, []);
+  }, [envNetworkList]);
 
   // Set up react-hook-form
   const {
@@ -229,7 +257,12 @@ const AddToken = () => {
       if (isWalletFromSeedPhase) {
         if (!selectedItem.isEVMNetwork) {
           selectedItem.tokenType !== 'ERC20' &&
-            (await WalletCommonService().getWalletUsingSeed(selectedItem));
+            (await WalletCommonService().getWalletUsingSeed(
+              selectedItem,
+              WalletCommonService().getDerivationPathIndex(
+                selectedItem.networkName,
+              ),
+            ));
         }
       }
       dispatch(triggerFetchAllTokenBalanceAndStartObservers());
@@ -251,6 +284,42 @@ const AddToken = () => {
     navigation.goBack();
   };
 
+  // Handle add token
+  const addSelectedToken = async () => {
+    dispatch(
+      updateLoader({
+        isLoading: true,
+      }),
+    );
+    var i = 0;
+    do {
+      var currentItem = selectedTokenList[i];
+      await nextFrame();
+
+      dispatch(
+        addRemoveTokenFromList({
+          token: currentItem,
+        }),
+      );
+
+      if (isWalletFromSeedPhase) {
+        if (!currentItem.isEVMNetwork) {
+          currentItem.tokenType !== 'ERC20' &&
+            (await WalletCommonService().getWalletUsingSeed(currentItem));
+        }
+      }
+      dispatch(triggerFetchAllTokenBalanceAndStartObservers());
+
+      i++;
+    } while (i < selectedTokenList.length);
+    dispatch(
+      updateLoader({
+        isLoading: false,
+      }),
+    );
+    navigation.goBack();
+  };
+
   useUpdateEffect(() => {
     setIsAddEnable(isValid);
   }, [isValid]);
@@ -268,7 +337,7 @@ const AddToken = () => {
   useUpdateEffect(() => {
     setSelectedItem(prevSelectedItem => ({
       ...prevSelectedItem,
-      title: watchSymbol,
+      title: watchSymbol.trim(),
     }));
   }, [watchSymbol]);
 
@@ -279,17 +348,14 @@ const AddToken = () => {
     const { decimals, error, symbol, logoURI, name, balance } =
       await WalletCommonService().getCustomTokenInfoByTokenAddress(
         debouncedContractAddress,
-        tokensList[
-          selectedNetwork?.id === 'Matic' ? 'Polygon' : selectedNetwork?.id
-        ],
+        networkArray[selectedNetwork?.id],
       );
 
     if (!isDirty) {
       return;
     }
     if (error) {
-      //TODO: handle error here
-      console.log('Error!@!!', error);
+      console.log('Error: ', error);
       setError('contractAddress', {
         message: error,
       });
@@ -305,24 +371,18 @@ const AddToken = () => {
       shouldValidate: true,
     });
 
-    const shortName =
-      generateRandomString(6) +
-      '_' +
-      (selectedNetwork?.id === 'Matic' ? 'Polygon' : selectedNetwork?.id);
+    const shortName = generateRandomString(6) + '_' + selectedNetwork?.id;
     const tokenObject = {
       title: symbol,
       subTitle: name,
       shortName: shortName,
-      amount: balance?.toString(),
+      amount: balance?.toString() || '0.0',
       usdAmount: '0.0',
-      image: logoURI && logoURI,
+      image: logoURI ? logoURI : undefined,
       networkName: selectedNetwork?.id,
       tokenType: 'ERC20',
       tokenContractAddress: watchContractAddress,
-      isEVMNetwork:
-        tokensList[
-          selectedNetwork?.id === 'Matic' ? 'Polygon' : selectedNetwork?.id
-        ].isEVMNetwork,
+      isEVMNetwork: tokensList[selectedNetwork?.id].isEVMNetwork,
       ...networksURLList[selectedNetwork?.networkId][networkEnvironment],
       isCustom: true,
       envType: networkEnvironment,
@@ -337,37 +397,7 @@ const AddToken = () => {
           shouldHideBack={true}
           shouldShowCancel={true}
           onPressNext={
-            activeTab === 1
-              ? handleSubmit(onSubmit)
-              : async () => {
-                  dispatch(
-                    addRemoveTokenFromList({
-                      token: selectedItem,
-                    }),
-                  );
-
-                  if (isWalletFromSeedPhase) {
-                    if (!selectedItem.isEVMNetwork) {
-                      dispatch(
-                        updateLoader({
-                          isLoading: true,
-                        }),
-                      );
-                      await nextFrame();
-                      selectedItem.tokenType !== 'ERC20' &&
-                        (await WalletCommonService().getWalletUsingSeed(
-                          selectedItem,
-                        ));
-                      dispatch(
-                        updateLoader({
-                          isLoading: false,
-                        }),
-                      );
-                    }
-                  }
-                  dispatch(triggerFetchAllTokenBalanceAndStartObservers());
-                  navigation.goBack();
-                }
+            activeTab === 1 ? handleSubmit(onSubmit) : addSelectedToken
           }
           rightButtonText={'Add'}
           title={t('wallet:add_token_title')}
@@ -393,10 +423,9 @@ const AddToken = () => {
           <AddTokenListView
             testID="AddTokenListView"
             items={allNetworkList}
-            handleIsAddEnable={item => {
-              console.log('selectedItem', item);
-              setSelectedItem(item);
-              setIsAddEnable(item?.shortName ? true : false);
+            handleIsAddEnable={items => {
+              setSelectedTokenList(items);
+              setIsAddEnable(items.length === 0 ? false : true);
             }}
           />
         )}

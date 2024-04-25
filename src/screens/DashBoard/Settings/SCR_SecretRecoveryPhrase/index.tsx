@@ -17,7 +17,6 @@ import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import BiometricService from 'services/BiometricService';
 import { RootState } from 'store/index';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import { getWalletAddress, showToast } from 'theme/Helper/common/Function';
 import Variables from 'theme/Variables';
 import ScreenNames from 'theme/screenNames';
@@ -51,7 +50,9 @@ const SecretRecoveryPhrase: React.FC<any> = () => {
       redirectFrom === ScreenNames.Accounts
     ) {
       for (const network in walletAddress[userData?.userId]) {
-        setSelectedWalletAddress(walletAddress[userData?.userId][network]);
+        setSelectedWalletAddress(
+          walletAddress[userData?.userId][network].address,
+        );
       }
     }
   }, [selectedNetwork?.shortName, userData?.isWalletFromSeedPhase]);
@@ -82,7 +83,6 @@ const SecretRecoveryPhrase: React.FC<any> = () => {
             <NetworkListDropDownView
               selectedNetwork={selectedNetwork}
               onSelectedNetwork={item => {
-                console.log(item);
                 setSelectedNetwork(item);
               }}
               filteredNetworkIds={selectedTokensList}
@@ -130,10 +130,10 @@ const SecretRecoveryPhrase: React.FC<any> = () => {
               ? t('setting:show')
               : t('setting:reveal')
           }
-          backGroundColor={
-            userData?.isWalletFromSeedPhase && !selectedNetwork?.shortName
-              ? applyOpacityToHexColor(Colors.switchBGColor, 0.3)
-              : Colors.primary
+          colors={
+            userData?.isWalletFromSeedPhase &&
+            !selectedNetwork?.shortName &&
+            Colors.disableGradientColor
           }
           btnTextColor={
             userData?.isWalletFromSeedPhase && !selectedNetwork?.shortName

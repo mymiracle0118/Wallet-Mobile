@@ -3,14 +3,6 @@ import { Platform } from 'react-native';
 import CloudService from './CloudService';
 import { config, createFiles, readFiles } from './GdriveHelper';
 
-// jest.mock('react.native', () => ({
-//   Platform: {
-//     OS: 'ios',
-//   },
-//   AnotherProperty: {
-//     subProperty: 'value',
-//   },
-// }));
 jest.mock('./iCloudService', () => ({
   uploadToiCloud: jest.fn(),
   getFilePath: jest.fn(),
@@ -21,8 +13,6 @@ jest.mock('./GdriveHelper', () => ({
   createFiles: jest.fn(),
   readFiles: jest.fn(),
 }));
-
-// Mocking the modules
 
 // Mocking the modules
 describe('CloudService', function () {
@@ -50,8 +40,6 @@ describe('CloudService', function () {
     });
   });
   describe('readCloudFile', () => {
-    // Testing if iCloudService and its methods are being called for ios platform
-
     // Testing if GdriveHelper and its methods are being called for non-ios platform
     it('should call GdriveHelper readFiles for non-iOS', async () => {
       Platform.OS = 'android';
@@ -73,7 +61,7 @@ describe('CloudService', function () {
     jest.restoreAllMocks();
   });
   describe('uploadToCloud', () => {
-    it('should upload to Gdrive if Platform.OS is not ios', async () => {
+    it('should upload to Gdrive if Platform.OS is not ios and also createFiles function should be called with a input which passed to uploadToCloud', async () => {
       Platform.OS = 'android';
       const localPath = 'path/to/local/file';
       const fileName = 'file.txt';

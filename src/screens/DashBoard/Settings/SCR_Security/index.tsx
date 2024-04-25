@@ -37,7 +37,7 @@ const Security: React.FC<any> = () => {
     navigation.navigate(ScreenNames.CreatePassword);
   };
 
-  const renderItem = ({ item, index, section }): React.JSX.Element => {
+  const renderSecurityItem = ({ item, index, section }): React.JSX.Element => {
     return (
       <View
         style={
@@ -70,13 +70,13 @@ const Security: React.FC<any> = () => {
           }}
           style={style(Gutters, Layout).rawItemStyle}
         >
-          {rawRender(item)}
+          {rawRenderSecurityItem(item)}
         </Pressable>
       </View>
     );
   };
 
-  const rawRender = item => {
+  const rawRenderSecurityItem = item => {
     switch (t(item.type)) {
       case t('common:types.viewInfo'):
         return (
@@ -113,6 +113,15 @@ const Security: React.FC<any> = () => {
               }
               onPress={async () => {
                 if (t(item.toggleType) === t('common:toggle_types.faceId')) {
+                  if (config.isFaceIdEnabledForTransaction === true) {
+                    const response = await BiometricService.authenticate(
+                      'Authenticate using biometric',
+                    );
+                    if (!response.success) {
+                      showToast('error', t('common:invalid_authentication'));
+                      return;
+                    }
+                  }
                   dispatch(
                     updateSettingConfig({
                       config: {
@@ -147,6 +156,7 @@ const Security: React.FC<any> = () => {
     }
   };
 
+  // Use map to iterate over each item in the SecurityData array
   const filteredSecurityData = mockData.SecurityData.map(item => {
     if (item.data) {
       let excludedOptionsIds: number[] = [];
@@ -169,8 +179,8 @@ const Security: React.FC<any> = () => {
         <HeaderWithTitleAndSubTitle title={t(title)} />
         <SectionList
           sections={filteredSecurityData}
-          // keyExtractor={(item, index) => item + index}
-          renderItem={renderItem}
+          keyExtractor={(item, index) => `${item.id + index}`}
+          renderItem={renderSecurityItem}
           renderSectionHeader={() => (
             <View style={style(Gutters, Layout).sectionHeader} />
           )}

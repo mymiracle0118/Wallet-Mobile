@@ -3,7 +3,7 @@ import { Animated, ViewStyle } from 'react-native';
 
 import useTheme from 'hooks/useTheme';
 
-import { FadeAnimationRef } from './types';
+import { FadeAnimationRef } from './FadeAnimation.types';
 
 interface FadeAnimationProps {
   children: React.ReactNode;

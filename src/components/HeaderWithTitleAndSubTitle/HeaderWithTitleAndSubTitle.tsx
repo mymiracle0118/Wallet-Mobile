@@ -99,7 +99,7 @@ export default function HeaderWithTitleAndSubTitle({
       {hasLargeTitle && (
         <Text style={[Fonts.textLarge, Gutters.smallBMargin]}>{title}</Text>
       )}
-      {customSubTitleView && customSubTitleView}
+      {customSubTitleView ? customSubTitleView : null}
       {subTitle && <Text style={Fonts.textOpacityRegular}>{subTitle}</Text>}
     </>
   );

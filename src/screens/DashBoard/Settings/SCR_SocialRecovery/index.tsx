@@ -16,8 +16,6 @@ import { style } from './style';
 const SocialRecovery: React.FC<any> = () => {
   const { Common, Gutters, Layout, Fonts, Images, Colors } = useTheme();
 
-  // const { title } = useRoute().params as any;
-
   const navigation = useNavigation<StackNavigationProp<any>>();
 
   return (

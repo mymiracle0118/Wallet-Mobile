@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { View } from 'react-native';
+import { Keyboard, View } from 'react-native';
 import { height } from 'react-native-size-scaling';
 import { useSelector } from 'react-redux';
 
@@ -18,13 +18,13 @@ import {
   NetworkListDropDownView,
   SafeAreaWrapper,
 } from 'components/index';
+import { useKeyboard } from 'customHooks/useKeyboard';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import Bip39Manager from 'services/Bip39Manager';
 import StoreUpdateReduxWalletStateService from 'services/StoreUpdateReduxWalletStateService';
 import WalletCommonService from 'services/WalletCommonService';
 import { RootState } from 'store/index';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import { defaultNetwork } from 'theme/Helper/constant';
 import {
   ScreenNames,
@@ -45,9 +45,14 @@ export default function ImportWallet() {
   const { redirectFrom } = useRoute().params as any;
   const [selectedNetwork, setSelectedNetwork] = useState<SortingItem>();
 
-  const walletAddressList = useSelector((state: RootState) => {
-    return state.wallet?.data?.walletAddress;
+  const userInfo = useSelector((state: RootState) => {
+    return state.userInfo?.data;
   });
+
+  const isWalletFromSeedPhase = useSelector((state: RootState) => {
+    return state.wallet?.data?.isWalletFromSeedPhase;
+  });
+  const keyboard = useKeyboard();
 
   // Set up react-hook-form
   const {
@@ -70,13 +75,20 @@ export default function ImportWallet() {
 
   // Asynchronous function handling form submission
   const onSubmit = async (data: FormData) => {
+    if (keyboard.keyboardShown) {
+      Keyboard.dismiss();
+      return;
+    }
+    const seedPhraseOrPrivateKey = data.seedPhraseOrPrivateKey
+      .replace('0x', '')
+      .trim();
     // Check the redirection source
     if (redirectFrom === t('onBoarding:by_secret_recovery_phrase')) {
       // Check if the provided seed phrase is valid using Bip39Manager
-      if (Bip39Manager().isMnemonicValid(data.seedPhraseOrPrivateKey)) {
+      if (Bip39Manager().isMnemonicValid(seedPhraseOrPrivateKey)) {
         // Create a default network wallet using the provided seed phrase
         const wallet = await WalletCommonService().createDefaultWallet(
-          data.seedPhraseOrPrivateKey,
+          seedPhraseOrPrivateKey,
         );
 
         if (wallet?.address) {
@@ -94,14 +106,14 @@ export default function ImportWallet() {
     } else if (redirectFrom === t('onBoarding:by_private_key')) {
       // Get the wallet address using the provided private key
       let walletAddress = WalletCommonService().getWalletUsingPrivateKey(
-        data.seedPhraseOrPrivateKey.replace('0x', '').trim(),
+        seedPhraseOrPrivateKey,
         selectedNetwork?.id,
       );
 
       if (walletAddress) {
         // Update the private key in the Redux store
         StoreUpdateReduxWalletStateService().updatePrivateKeyInStore(
-          data.seedPhraseOrPrivateKey.replace('0x', '').trim(),
+          seedPhraseOrPrivateKey,
         );
         navigation.navigate(ScreenNames.CreateAccount, {
           redirectFrom: ScreenNames.ImportWallet,
@@ -111,24 +123,31 @@ export default function ImportWallet() {
     } else if (
       redirectFrom === t('setting:by_import_sub_account_private_key')
     ) {
-      // Get the wallet address using the provided private key
       let walletAddress = WalletCommonService().getWalletUsingPrivateKey(
-        data.seedPhraseOrPrivateKey.replace('0x', '').trim(),
+        seedPhraseOrPrivateKey,
         selectedNetwork?.id,
       );
 
-      // Check if the wallet address already exists in the walletAddressList
-      const addressExists = Object.values(walletAddressList).some(obj =>
-        Object.values(obj).includes(walletAddress),
-      );
+      if (walletAddress) {
+        // Check if the private key already exists in the users data
+        let existsUser = [];
 
-      if (addressExists) {
-        setError('seedPhraseOrPrivateKey', {
-          type: 'custom',
-          message: 'setting:wallet_already_exists',
-        });
-      } else {
-        if (walletAddress) {
+        if (!isWalletFromSeedPhase) {
+          existsUser = userInfo?.usersData?.filter(
+            item => item.privateKey === seedPhraseOrPrivateKey,
+          );
+        }
+
+        const existsImportedUser = userInfo?.importedUsersData?.filter(
+          item => item.privateKey === seedPhraseOrPrivateKey,
+        );
+
+        if (existsUser?.length >= 1 || existsImportedUser?.length >= 1) {
+          setError('seedPhraseOrPrivateKey', {
+            type: 'custom',
+            message: 'setting:wallet_already_exists',
+          });
+        } else {
           navigation.navigate(ScreenNames.CreateEditImportAccount, {
             title: t('common:Recover_wallet_title'),
             subTitle: '',
@@ -238,13 +257,13 @@ export default function ImportWallet() {
 
         <Button
           text={t('common:Next')}
-          backGroundColor={
+          colors={
             isValid &&
             (redirectFrom === t('onBoarding:by_secret_recovery_phrase')
               ? true
               : selectedNetwork?.id)
-              ? Colors.primary
-              : applyOpacityToHexColor(Colors.switchBGColor, 0.3)
+              ? Colors.primaryGradientColor
+              : Colors.disableGradientColor
           }
           onPress={handleSubmit(onSubmit)}
           btnTextColor={

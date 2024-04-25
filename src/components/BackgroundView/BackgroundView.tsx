@@ -29,7 +29,6 @@ const BackgroundView = (props: Props) => {
                 (DeviceMetrics.hasNotch ? 0.68 : 0.74),
             },
       ]}
-      // resizeMode="cover"
       source={image}
     />
   );

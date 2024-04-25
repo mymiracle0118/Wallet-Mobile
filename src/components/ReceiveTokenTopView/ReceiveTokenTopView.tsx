@@ -49,7 +49,6 @@ const ReceiveTokenTopView = forwardRef((props: Props, ref) => {
     tokenIconPath,
     networkName,
     activeTab,
-    // setActiveTab,
     tokenName,
   } = props;
   const { Colors, Images, Gutters, Layout, Fonts } = useTheme();
@@ -58,14 +57,10 @@ const ReceiveTokenTopView = forwardRef((props: Props, ref) => {
     return state.userInfo.data.currentUser;
   });
 
-  // const tabs = ['common:tab_types.address', 'common:tab_types.username'];
-
   return (
-    <View
-      style={[style(Gutters, Layout, Colors, Fonts).container, containerStyle]}
-    >
+    <View style={[style(Gutters, Layout, Colors).container, containerStyle]}>
       <ImageBackground
-        style={style(Gutters, Layout, Colors, Fonts).topImageBgView}
+        style={style(Gutters, Layout, Colors).topImageBgView}
         resizeMode="stretch"
         source={Images.ic_receiveTokenTopViewBg}
       >
@@ -76,22 +71,6 @@ const ReceiveTokenTopView = forwardRef((props: Props, ref) => {
           alignment="center"
         />
         <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
-
-        {/* <TabBar
-          tabs={tabs}
-          activeTab={activeTab}
-          setActiveTab={index => {
-            setActiveTab(index);
-          }}
-          tabBarStyle={style(Gutters, Layout, Colors, Fonts).tabBarContainer}
-          activeTabStyle={{
-            backgroundColor: Colors.white,
-          }}
-          activeTabTextStyle={{
-            color: Colors.textGray800,
-          }}
-        /> */}
-        {/* <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} /> */}
 
         {activeTab === 0 && (
           <QrCodeView ref={ref} size={scale(140)} value={qrCodeText} />
@@ -110,7 +89,7 @@ const ReceiveTokenTopView = forwardRef((props: Props, ref) => {
             : userData?.userName}
         </Text>
       </ImageBackground>
-      <View style={style(Gutters, Layout, Colors, Fonts).actionsContainer}>
+      <View style={style(Gutters, Layout, Colors).actionsContainer}>
         <TokenAction
           text={t('common:Save')}
           iconPath={Images.ic_save}

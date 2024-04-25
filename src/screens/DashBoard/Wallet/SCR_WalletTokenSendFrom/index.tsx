@@ -40,7 +40,6 @@ const WalletTokenSendFrom: React.FC<any> = () => {
           onPressLeftImage={() => {
             navigation.goBack();
           }}
-          // shouldShowCancel={true}
         />
         <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
         <TitleWithLeftImageView

@@ -14,8 +14,6 @@ jest.mock('./FileManagerService');
 jest.mock('./EncryptionService');
 
 // Mocking the required modules
-
-// Mocking the required modules
 describe('Testing EncodeDataAndStoreDataToFile function', function () {
   // Reset all mocks before each test
   beforeEach(() => {

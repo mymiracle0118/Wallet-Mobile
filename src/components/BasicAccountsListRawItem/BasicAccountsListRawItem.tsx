@@ -61,19 +61,6 @@ const BasicAccountsListRawItem = (props: Props) => {
       )}
 
       <View style={style(Gutters, Layout).subView}>
-        {/* <View style={Layout.fill}>
-          <View style={style(Gutters, Layout).titleContainer}>
-            <Text style={Fonts.titleSmall} numberOfLines={1}>
-              {item?.userName}
-            </Text>
-            <View style={style(Gutters, Layout, Colors).dot} />
-          </View>
-          <Text
-            style={[Fonts.textTinyGrayLightRegular, Gutters.extraTinyTMargin]}
-          >
-            {'$0.0'}
-          </Text>
-        </View> */}
         <Text style={Fonts.titleSmall} numberOfLines={1}>
           {item?.userName}
         </Text>
@@ -85,6 +72,7 @@ const BasicAccountsListRawItem = (props: Props) => {
             <TouchableOpacity
               style={style(Gutters, Layout, Colors).menuBtn}
               onPress={showMenu}
+              testID="option-menu"
               hitSlop={{ top: 30, bottom: 30, left: 30 }}
             >
               <Image
@@ -128,6 +116,7 @@ const BasicAccountsListRawItem = (props: Props) => {
         </Menu>
 
         <BouncyCheckbox
+          testID="bouncy-checkbox"
           isChecked={selectedId === item.userId}
           disableBuiltInState
           iconImageStyle={{ tintColor: Colors.blackGray }}

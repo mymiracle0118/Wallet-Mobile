@@ -11,12 +11,9 @@ const PrivateKeyService = () => {
   ) => {
     try {
       const seed = Bip39Manager().getSeedUsingMnemonic(mnemonic);
-
       const hd = HDKey.fromMasterSeed(seed.toString('hex'));
       const path = `m/44'/784'/0'/0'/${pathIndex}'`;
       const privateKey = hd.derive(path).privateKey;
-      console.log('privateKey', privateKey);
-
       return privateKey;
     } catch (error: any) {
       showToast('error', t('common:Invalid_seed_phrase'));

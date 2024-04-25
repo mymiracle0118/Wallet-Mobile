@@ -1,28 +1,30 @@
-import AesCrypto from 'react-native-aes-crypto';
+import CryptoJS from 'react-native-crypto-js';
 
 import KeyChainService from './KeyChainService';
 
-const SALT = 'salt';
-const ITERATIONS = 5000;
-const KEY_SIZE = 256;
 const IV_SIZE = 16;
-const ALGORITHM = 'aes-256-cbc';
+interface EncryptedData {
+  cipher: any;
+  iv: any;
+}
 
 const EncryptionService = () => {
   const encrypt = async (data: string): Promise<any> => {
     try {
+      // Get the password from the keychain
       const passWord = await KeyChainService().getPassWordFromKeyChain();
-      const encryptedKey = await AesCrypto.pbkdf2(
-        passWord,
-        SALT,
-        ITERATIONS,
-        KEY_SIZE,
-      );
-      const iv = await AesCrypto.randomKey(IV_SIZE);
-      const cipher = await AesCrypto.encrypt(data, encryptedKey, iv, ALGORITHM);
-      return {
-        cipher,
+      // Generate a random IV
+      const iv = CryptoJS.lib.WordArray.random(IV_SIZE);
+      // Encrypt the data
+      const cipher = CryptoJS.AES.encrypt(data, passWord, {
         iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7,
+      }).toString();
+      // Return the cipher and the IV
+      return {
+        cipher: cipher,
+        iv: iv.toString(),
       };
     } catch (error) {
       console.error('Encryption failed:', error);
@@ -30,22 +32,24 @@ const EncryptionService = () => {
     }
   };
 
-  const decrypt = async (encryptedData: any): Promise<string> => {
+  const decrypt = async (encryptedData: EncryptedData): Promise<string> => {
     try {
+      // Get the password from the keychain
       const passWord = await KeyChainService().getPassWordFromKeyChain();
-      const encryptedKey = await AesCrypto.pbkdf2(
+      // Parse the IV
+      const parsedIV = CryptoJS.enc.Hex.parse(encryptedData.iv);
+      // Decrypt the data
+      const decryptedBytes = CryptoJS.AES.decrypt(
+        encryptedData.cipher,
         passWord,
-        SALT,
-        ITERATIONS,
-        KEY_SIZE,
+        {
+          iv: parsedIV,
+          mode: CryptoJS.mode.CBC,
+          padding: CryptoJS.pad.Pkcs7,
+        },
       );
-      const decryptedData = await AesCrypto.decrypt(
-        encryptedData?.cipher,
-        encryptedKey,
-        encryptedData?.iv,
-        ALGORITHM,
-      );
-      return decryptedData;
+      // Return the decrypted data as a string
+      return decryptedBytes.toString(CryptoJS.enc.Utf8);
     } catch (error) {
       console.error('Decryption failed:', error);
       throw error;

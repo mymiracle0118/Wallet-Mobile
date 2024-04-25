@@ -19,7 +19,6 @@ export const style = (
       height: 32,
       ...BorderRadius.ExtraMediumBorderRadius,
     },
-    addressBtn: { ...Gutters.tinyVPadding },
     textImage: {
       width: 32,
       height: 32,

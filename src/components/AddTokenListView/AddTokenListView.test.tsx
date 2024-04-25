@@ -24,6 +24,7 @@ describe('AddTokenListView', () => {
           subTitle: 'Token Subtitle 1',
           networkName: 'Ethereum',
           image: Images.background, // Replace with the actual path
+          tokenType: 'ERC20',
         },
         // Add more mock data as needed
       ],
@@ -59,12 +60,15 @@ describe('AddTokenListView', () => {
     fireEvent.press(tokenItem);
 
     // Assuming your handleIsAddEnable function should be called with the item as an argument
-    expect(mockProps.handleIsAddEnable).toHaveBeenCalledWith({
-      id: '1',
-      title: 'Token Title 1',
-      subTitle: 'Token Subtitle 1',
-      networkName: 'Ethereum',
-      image: Images.background,
-    });
+    expect(mockProps.handleIsAddEnable).toHaveBeenCalledWith([
+      {
+        id: '1',
+        title: 'Token Title 1',
+        subTitle: 'Token Subtitle 1',
+        networkName: 'Ethereum',
+        image: Images.background,
+        tokenType: 'ERC20',
+      },
+    ]);
   });
 });

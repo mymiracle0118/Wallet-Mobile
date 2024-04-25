@@ -19,6 +19,8 @@ type Props = {
   borderColor?: string;
   // eslint-disable-next-line react/require-default-props
   minValue?: number;
+  gasUnit: string;
+  values: any[];
 };
 
 const GasPriceView = ({
@@ -30,6 +32,8 @@ const GasPriceView = ({
   setSliderValue,
   borderColor,
   minValue,
+  gasUnit,
+  values,
 }: Props) => {
   const { Layout, Colors, Gutters } = useTheme();
 
@@ -63,13 +67,14 @@ const GasPriceView = ({
             title={t('common:max_fee')}
             amount={t('common:gwei_amount', {
               amount: sliderValue.toFixed(8).replace(/\.?0+$/, ''),
+              gasUnit: gasUnit,
             })}
           />
           <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
           <GradientSlider
-            minValue={minValue}
-            sliderValue={sliderValue}
+            values={values}
             setSliderValue={setSliderValue}
+            minValue={minValue ?? 0}
           />
           <HorizontalSeparatorView spacing={Variables.MetricsSizes.small} />
         </>

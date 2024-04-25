@@ -13,12 +13,12 @@ type Props = {
 };
 
 const SelectedPhraseView = ({ text, borderColor, position }: Props) => {
-  const { Layout, Gutters, Fonts, Colors } = useTheme();
+  const { Layout, Fonts, Colors } = useTheme();
 
   return (
     <View
       style={[
-        style(Gutters, Layout, Colors).container,
+        style(Layout, Colors).container,
         {
           borderColor: borderColor,
           width: width / 3 - scale(16),

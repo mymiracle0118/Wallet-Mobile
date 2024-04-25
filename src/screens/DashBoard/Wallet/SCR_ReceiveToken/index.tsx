@@ -36,16 +36,20 @@ export default function ReceiveToken() {
 
   // Function to be called when the QR code image is loaded
   const onQRCodeImageSave = useCallback(() => {
-    qrCodeViewRef.current.capture().then(async uri => {
-      // Logic to handle the captured image URI
-      try {
-        const response = await CameraRoll.save(uri, { type: 'photo' });
-        console.log(response);
-        response && showToast('success', t('common:saved_to_gallery'));
-      } catch (error) {
-        showToast('error', t('common:error_saved_to_gallery'));
-      }
-    });
+    qrCodeViewRef.current
+      .capture()
+      .then(async uri => {
+        // Logic to handle the captured image URI
+        try {
+          const response = await CameraRoll.saveToCameraRoll(uri, 'photo');
+          response && showToast('success', t('common:saved_to_gallery'));
+        } catch (error) {
+          showToast('error', t('common:error_saved_to_gallery'));
+        }
+      })
+      .catch(error => {
+        console.error(error);
+      });
   }, []);
 
   const getFormattedWalletAddress = () => {
@@ -67,7 +71,6 @@ export default function ReceiveToken() {
         <ReceiveTokenTopView
           containerStyle={style(Gutters, Layout, Colors, Fonts).topView}
           ref={qrCodeViewRef}
-          //0x2E162941225Ae0cF35586EAF10c73f0e5404d156/transfer?address=0x7cF23BC19F70b01a2663baAA19fe76a996bfAE04&uint256=1e7
           qrCodeText={
             (currentTokenInfo?.isEVMNetwork &&
             currentTokenInfo?.shortName === NetWorkType.ETH
@@ -97,11 +100,8 @@ export default function ReceiveToken() {
               textStyle={{ ...Fonts.textTinyBoldWhite }}
               iconStyle={style(Gutters, Layout, Colors, Fonts).warningViewImage}
               text={t('wallet:receiveEth_WarningText', {
-                tokenType:
-                  currentTokenInfo?.tokenType !== 'Native'
-                    ? currentTokenInfo?.tokenType + ' '
-                    : '',
-                tokenName: currentTokenInfo?.title,
+                tokenType: '',
+                tokenName: currentTokenInfo?.networkName,
               })}
               shouldShowWarningLeftIcon
             />

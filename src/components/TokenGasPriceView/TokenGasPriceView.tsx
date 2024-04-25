@@ -17,7 +17,6 @@ import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import { showToast } from 'theme/Helper/common/Function';
 import Variables from 'theme/Variables';
 
-import { BorderButton } from '..';
 import HorizontalSeparatorView from '../HorizontalSeparatorView/HorizontalSeparatorView';
 import TokenAction from '../TokenAction/TokenAction';
 import { style } from './styles';
@@ -35,9 +34,11 @@ type Props = {
   onPressBuy: () => void;
   tokenIconPath: ImageSourcePropType;
   onPressFavorite: () => void;
+  onPressCollect: (() => void) | null;
   isFavorite: boolean;
   shouldShowBalance?: boolean;
   isGasFeeFetching?: boolean;
+  isShowHide?: boolean;
 };
 
 const TokenGasPriceView = (props: Props) => {
@@ -48,17 +49,19 @@ const TokenGasPriceView = (props: Props) => {
     usdAmount,
     gasPriceGwei,
     usdGasPriceGwei,
-    onPressAlert,
+    // onPressAlert,
     onPressReceive,
     onPressSend,
-    onPressSwap,
+    // onPressSwap,
     onPressBuy,
     onPressHide,
     tokenIconPath,
     onPressFavorite,
+    onPressCollect,
     isFavorite,
     shouldShowBalance,
     isGasFeeFetching,
+    isShowHide,
   } = props;
 
   const [visible, setVisible] = useState(false);
@@ -75,32 +78,35 @@ const TokenGasPriceView = (props: Props) => {
 
   const renderOptionMenu = () => (
     <View style={style(Gutters, Layout, Colors).menuRow}>
-      <Menu
-        visible={visible}
-        anchor={
-          <TouchableOpacity
-            style={style(Gutters, Layout, Colors).menuBtn}
-            onPress={showMenu}
-          >
-            <Image
-              style={style(Gutters, Layout, Colors).menuIcon}
-              source={Images.ic_option_menu_horizontal}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        }
-        onRequestClose={hideMenu}
-        style={style(Gutters, Layout, Colors).menuView}
-      >
-        <MenuItem
-          onPress={() => {
-            hideMenu();
-            onPressHide();
-          }}
-          text={t('wallet:hide_token')}
-          iconPath={Images.ic_eye_off}
-        />
-      </Menu>
+      {!isShowHide && (
+        <Menu
+          visible={visible}
+          anchor={
+            <TouchableOpacity
+              style={style(Gutters, Layout, Colors).menuBtn}
+              onPress={showMenu}
+            >
+              <Image
+                style={style(Gutters, Layout, Colors).menuIcon}
+                source={Images.ic_option_menu_horizontal}
+                resizeMode="contain"
+              />
+            </TouchableOpacity>
+          }
+          onRequestClose={hideMenu}
+          style={style(Gutters, Layout, Colors).menuView}
+        >
+          <MenuItem
+            onPress={() => {
+              hideMenu();
+              onPressHide();
+            }}
+            text={t('wallet:hide_token')}
+            iconPath={Images.ic_eye_off}
+          />
+        </Menu>
+      )}
+
       <TouchableOpacity
         style={[
           style(Gutters, Layout, Colors).menuBtn,
@@ -138,7 +144,7 @@ const TokenGasPriceView = (props: Props) => {
           ) : (
             <View style={style(Gutters, Layout, Colors).textImage}>
               <Text style={[Fonts.titleSmall, { color: Colors.blackGray }]}>
-                {amount?.split(' ')[1][0]}
+                {amount?.split('\n')[1][0]}
               </Text>
             </View>
           )}
@@ -167,16 +173,6 @@ const TokenGasPriceView = (props: Props) => {
             )}
           </View>
           {renderOptionMenu()}
-          {/* <TouchableOpacity
-            style={style(Gutters, Layout, Colors).menuBtn}
-            onPress={onPressAlert}
-          >
-            <Image
-              style={style(Gutters, Layout, Colors).menuIcon}
-              source={Images.ic_option_menu_horizontal}
-              resizeMode="contain"
-            />
-          </TouchableOpacity> */}
         </View>
         <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
 
@@ -210,15 +206,23 @@ const TokenGasPriceView = (props: Props) => {
               <ActivityIndicator color={Colors.white} />
             </View>
           )}
-          <BorderButton
+          {/* <BorderButton
             text={t('wallet:alerts')}
             onPress={onPressAlert}
             btnStyle={style(Gutters, Layout, Colors).alertBtn}
             textStyle={Fonts.textSmallBold}
-          />
+          /> */}
         </View>
       </ImageBackground>
       <View style={style(Gutters, Layout, Colors).viewAction}>
+        {onPressCollect && (
+          <TokenAction
+            text={t('common:Collect')}
+            iconPath={Images.ic_collect}
+            onPress={onPressCollect}
+          />
+        )}
+
         <TokenAction
           text={t('common:Receive')}
           iconPath={Images.ic_receive}
@@ -229,11 +233,11 @@ const TokenGasPriceView = (props: Props) => {
           iconPath={Images.ic_send}
           onPress={onPressSend}
         />
-        <TokenAction
+        {/* <TokenAction
           text={t('common:Swap')}
           iconPath={Images.ic_swap}
           onPress={onPressSwap}
-        />
+        /> */}
         <TokenAction
           text={t('common:Stake')}
           iconPath={Images.ic_spark}
@@ -247,6 +251,7 @@ const TokenGasPriceView = (props: Props) => {
 TokenGasPriceView.defaultProps = {
   shouldShowBalance: false,
   isGasFeeFetching: false,
+  isShowHide: false,
 };
 
 export default memo(TokenGasPriceView);

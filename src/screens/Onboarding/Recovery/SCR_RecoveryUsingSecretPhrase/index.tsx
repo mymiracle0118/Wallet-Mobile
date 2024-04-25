@@ -21,7 +21,6 @@ import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
 import Bip39Manager from 'services/Bip39Manager';
 import WalletCommonService from 'services/WalletCommonService';
-import { applyOpacityToHexColor } from 'theme/Helper/ColorUtils';
 import { defaultNetwork } from 'theme/Helper/constant';
 import {
   ScreenNames,
@@ -141,13 +140,10 @@ export default function RecoveryUsingSecretPhrase() {
 
         <Button
           text={t('common:Next')}
-          backGroundColor={
-            isValid
-              ? Colors.primary
-              : applyOpacityToHexColor(Colors.switchBGColor, 0.3)
-          }
+          colors={!isValid && Colors.disableGradientColor}
           onPress={handleSubmit(onSubmit)}
           btnTextColor={isValid ? Colors.white : Colors.buttonGrayText}
+          disabled={!isValid}
         />
       </View>
     </SafeAreaWrapper>

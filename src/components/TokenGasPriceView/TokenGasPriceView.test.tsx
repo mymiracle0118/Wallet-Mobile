@@ -13,7 +13,7 @@ test('render correctly', () => {
     <Provider store={store}>
       <TokenGasPriceView
         tokenIconPath={Images.ic_background}
-        amount={'123 USDC'}
+        amount={'123\nUSDC'}
         usdAmount={`${CurrencySymbol} 132`}
         gasPriceGwei={'120'}
         usdGasPriceGwei={'14'}

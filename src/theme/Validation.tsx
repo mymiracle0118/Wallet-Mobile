@@ -2,9 +2,7 @@ import { t } from 'i18next';
 import * as Yup from 'yup';
 
 import {
-  MaximumPasswordCharacters,
   MaximumUsernameCharacters,
-  MinimumPasswordCharacters,
   MinimumPrivateKeyCharacters,
   MinimumUsernameCharacters,
 } from './Helper/constant';
@@ -23,6 +21,7 @@ const validationRegex = {
   AptosAddress: /^(0x)?[0-9A-Fa-f]{64}$/,
   url: /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/,
   maxAllowedDecimalForAmount: /^\d+(\.\d{0,6})?$/,
+  password: /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])(?!.*\s).{9,24}$/,
 };
 
 const createAccount = Yup.object().shape({
@@ -44,28 +43,24 @@ const createAccount = Yup.object().shape({
 
 const createPassword = Yup.object().shape({
   password: Yup.string()
+    .trim()
     .required('onBoarding:errorBlankPassword')
-    .min(MinimumPasswordCharacters, 'onBoarding:errorInvalidPassword')
-    .max(MaximumPasswordCharacters, 'onBoarding:errorInvalidPassword'),
+    .matches(validationRegex.password, 'onBoarding:errorInvalidPassword'),
 
   confirmPassword: Yup.string()
+    .trim()
     .required('onBoarding:errorBlankConfirmPassword')
-    .min(MinimumPasswordCharacters, 'onBoarding:errorInvalidPassword')
-    .max(MaximumPasswordCharacters, 'onBoarding:errorInvalidPassword')
     .oneOf([Yup.ref('password')], 'onBoarding:errorPasswordNotMatch'),
 });
 
 const password = Yup.object().shape({
-  password: Yup.string()
-    .required('onBoarding:errorBlankPassword')
-    .min(MinimumPasswordCharacters, 'onBoarding:errorInvalidPassword')
-    .max(MaximumPasswordCharacters, 'onBoarding:errorInvalidPassword'),
+  password: Yup.string().trim().required('onBoarding:errorBlankPassword'),
 });
 
 const seed = Yup.object().shape({
   seedPhraseOrPrivateKey: Yup.string()
     .trim()
-    .required('common:Invalid_seed_phrase')
+    .required('common:Enter_your_secret_recovery_phrase')
     .matches(validationRegex.seed, 'common:Invalid_seed_phrase'),
 });
 
@@ -99,12 +94,6 @@ const addCustomToken = Yup.object().shape({
     .required('wallet:enter_contract_address'),
   symbol: Yup.string().required('wallet:enter_symbol'),
   decimal: Yup.string().required(''),
-  // .matches(/^[A-Za-z]+$/, 'Symbol must contain only alphabetic characters'),
-  // decimal: Yup.number()
-  //   .typeError('wallet:decimal_must_number')
-  //   .required('wallet:enter_decimal')
-  //   .positive('wallet:decimal_must_positive')
-  //   .integer('wallet:decimal_must_integer'),
 });
 
 const addNetwork = Yup.object().shape({

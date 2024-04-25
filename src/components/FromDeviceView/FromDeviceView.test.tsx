@@ -19,3 +19,35 @@ test('render correctly', () => {
   );
   render(component);
 });
+
+describe('FromDeviceView', () => {
+  const mockProps = {
+    buttonName: 'Submit',
+    onPress: jest.fn(),
+    title: 'Title',
+    subTitle: 'Subtitle',
+    filePath: [{ name: 'file1.txt', fileStatus: 'success' }],
+    onPressClose: jest.fn(),
+    shouldShowUserCloudID: false,
+    shouldShowError: false,
+  };
+
+  it('renders correctly', () => {
+    const { getByText } = render(
+      <Provider store={store}>
+        <FromDeviceView {...mockProps} />
+      </Provider>,
+    );
+
+    const titleText = getByText('Title');
+    const subtitleText = getByText('Subtitle');
+
+    expect(titleText).toBeTruthy();
+    expect(subtitleText).toBeTruthy();
+
+    mockProps.filePath.forEach(({ name }) => {
+      const filePathText = getByText(name);
+      expect(filePathText).toBeTruthy();
+    });
+  });
+});

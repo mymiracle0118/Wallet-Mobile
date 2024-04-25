@@ -1,27 +1,56 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 
-import { render } from '@testing-library/react-native';
+import { render, fireEvent } from '@testing-library/react-native';
 import { store } from 'store/index';
-import { Images } from 'theme';
 
 import ActivityItem from './ActivityItem';
 
-test('render correctly', () => {
-  const component = (
-    <Provider store={store}>
-      <ActivityItem
-        item={{
-          id: '1',
-          image: Images.ic_send,
-          title: 'Send',
-          subTitle: 'Sept. 20 at 9:36 PM',
-          amount: '≤ 1.0002',
-          status: '0',
-          typeId: '1',
-        }}
-      />
-    </Provider>
-  );
-  render(component);
+describe('ActivityItem', () => {
+  const mockItem = {
+    from: 'senderAddress',
+    to: 'receiverAddress',
+    timeStamp: 1643828123000,
+    value: '1000000000000000000',
+    tokenDecimal: '18',
+    txreceipt_status: '1',
+  };
+
+  const mockTokenType = 'ETH';
+
+  const mockOnPress = jest.fn();
+
+  const mockWalletAddress = 'walletAddress';
+
+  const renderComponent = (props = {}) => {
+    const defaultProps = {
+      item: mockItem,
+      tokenType: mockTokenType,
+      onPress: mockOnPress,
+      walletAddress: mockWalletAddress,
+      ...props,
+    };
+
+    return render(
+      <Provider store={store}>
+        <ActivityItem {...defaultProps} />
+      </Provider>,
+    );
+  };
+
+  it('renders with custom props', () => {
+    const { getByTestId } = renderComponent({
+      shouldShowVerify: true,
+      shouldShowBalance: true,
+    });
+
+    expect(getByTestId('activity-item-verify-icon')).toBeTruthy();
+  });
+
+  it('calls onPress when pressed', () => {
+    const { getByTestId } = renderComponent();
+
+    fireEvent.press(getByTestId('activity-item-pressable'));
+    expect(mockOnPress).toHaveBeenCalled();
+  });
 });

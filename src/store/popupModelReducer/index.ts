@@ -25,6 +25,7 @@ const initialState: popupModelDataType = {
     onPressClose: null,
   },
 };
+
 const popupModelReducer = createSlice({
   name: 'popupModelReducer',
   initialState,
@@ -43,6 +44,7 @@ const popupModelReducer = createSlice({
     },
   },
 });
+
 export const { showPopup, hidePopup, showNotifications, hideNotifications } =
   popupModelReducer.actions;
 export default popupModelReducer.reducer;

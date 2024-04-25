@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Keyboard, Text, View } from 'react-native';
 import { useSelector } from 'react-redux';
 
-// import { useDispatch } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import {
@@ -22,8 +21,6 @@ import Variables from 'theme/Variables';
 import { GasPriceAlertPopUpItem } from 'types/applicationInterfaces';
 
 import { style } from './style';
-
-// import { AppDispatch } from 'store/index';
 
 const GasPriceAlert: React.FC<any> = () => {
   const { Common, Fonts, Gutters, Layout, Images, Colors } = useTheme();
@@ -130,8 +127,6 @@ const GasPriceAlert: React.FC<any> = () => {
         <View style={style(Gutters, Layout).flex05}>
           <InputBox
             onChangeText={handleGasPriceChange}
-            // isShowError={errors?.gasPrice?.message ? true : false}
-            // errMessage={errors?.gasPrice?.message}
             placeholder={t('wallet:zero_gwei', {
               tokenName: currentTokenInfo?.tokenGasFeeUnitToDisplay
                 ? currentTokenInfo?.tokenGasFeeUnitToDisplay
@@ -150,10 +145,6 @@ const GasPriceAlert: React.FC<any> = () => {
         <View style={style(Gutters, Layout).flex05}>
           <InputBox
             onChangeText={handleUsdPriceChange}
-            // onChangeText={text => {
-            //   // onChange(text);
-            //   setDisableGasPrice(!!text); // Disable Input Gas Price when Input Usd Price has a value
-            // }}
             placeholder={t('wallet:zero_usd')}
             value={formatValueWithDollarSign()}
             editable={!disableUsdPrice}

@@ -34,6 +34,7 @@ import {
   getWalletAddress,
   parseEther,
   showAlert,
+  showConfirmationModal,
   showReceivedTokenModal,
   showToast,
 } from 'theme/Helper/common/Function';
@@ -42,7 +43,7 @@ import Variables from 'theme/Variables';
 import { navigationRef } from 'theme/navigationHelper';
 import ScreenNames from 'theme/screenNames';
 import { ActivityItemInterface } from 'types/apiResponseInterfaces';
-import { TokenReceivePopUpItem } from 'types/applicationInterfaces';
+import { PopUpItem, TokenReceivePopUpItem } from 'types/applicationInterfaces';
 
 import { style } from './style';
 
@@ -78,9 +79,7 @@ const WalletTokenSendReview: React.FC<any> = () => {
     return currentTokenInfo?.tokenType === 'Native'
       ? currentTokenInfo
       : state.wallet.data.currentUserTokenArrayWithBalance[
-          currentTokenInfo?.networkName === 'Matic'
-            ? 'Polygon'
-            : currentTokenInfo?.networkName
+          currentTokenInfo?.networkName
         ];
   });
 
@@ -128,7 +127,6 @@ const WalletTokenSendReview: React.FC<any> = () => {
   }, []);
 
   const onTransactionStart = async (data: TransactionRequest) => {
-    console.log('transactionStart???', data);
     transactionObj = data;
 
     const activitySuccessItemObj = {
@@ -164,40 +162,47 @@ const WalletTokenSendReview: React.FC<any> = () => {
       onPressCancel: onPressCancel,
     } as TokenReceivePopUpItem;
     showReceivedTokenModal(popUpObj);
-
-    console.log('transactionDone???', transaction);
   };
 
   const onTransactionFail = (
-    transaction: TransactionReceipt | null | undefined | string,
+    _transaction: TransactionReceipt | null | undefined | string,
   ) => {
     if (isTransactionCancelledSuccess) {
       return;
     }
-    console.log('TransactionFail???', transaction);
     const activityFailItemObj = {
       ...activityItemObj,
       txreceipt_status: '3',
     };
 
     dispatch(updateTokenTransactionDetails(activityFailItemObj));
+
+    const popUpObj = {
+      isVisible: true,
+      popupTitle: t('common:Transaction_was_failed'),
+      popupDescription: _transaction,
+      buttonOkText: t('common:ok'),
+      okButtonType: 'primary',
+      onPressOk: callOk,
+      iconPath: currentTokenInfo?.image as any,
+      isFromAddToken: true,
+    } as PopUpItem;
+    showConfirmationModal(popUpObj);
   };
 
-  const onTransactionCancelStart = async (data: TransactionRequest) => {
-    console.log('transactionStart???', data);
-  };
+  const onTransactionCancelStart = async (_data: TransactionRequest) => {};
 
   const onTransactionCancelDone = (
     _transaction: TransactionReceipt | null | undefined,
   ) => {
     isTransactionCancelledSuccess = true;
     showAlert('', t('wallet:transaction_cancelled_successfully'));
-    const activityCancleItemObj = {
+    const activityCancelItemObj = {
       ...activityItemObj,
       txreceipt_status: '4',
     };
 
-    dispatch(updateTokenTransactionDetails(activityCancleItemObj));
+    dispatch(updateTokenTransactionDetails(activityCancelItemObj));
   };
 
   const onTransactionCancelFail = (
@@ -214,6 +219,7 @@ const WalletTokenSendReview: React.FC<any> = () => {
       navigation.navigate(ScreenNames.TokenDetails);
     }
   };
+
   const onPressCancel = () => {};
 
   const sendERC20Token = () => {
@@ -298,7 +304,7 @@ const WalletTokenSendReview: React.FC<any> = () => {
         />
         <HorizontalSeparatorView spacing={Variables.MetricsSizes.medium} />
 
-        <View style={style(Gutters, Layout, Colors).viewCenter}>
+        <View style={style(Gutters, Colors).viewCenter}>
           <Text style={[Fonts.textSmallDescriptionBold, Layout.fullWidth]}>
             {t('common:to')}
           </Text>

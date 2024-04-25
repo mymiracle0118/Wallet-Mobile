@@ -8,9 +8,8 @@ import {
   CardStyleInterpolators,
   createStackNavigator,
 } from '@react-navigation/stack';
-import Loader from 'components/Loader/Loader';
 import NotificationScreen from 'components/NotificationScreen/NotificationScreen';
-import { NoInternetView, ReceivedTokenPopUp } from 'components/index';
+import { Loader, NoInternetView, ReceivedTokenPopUp } from 'components/index';
 import {
   Accounts,
   BackUpFirstRecoveryPhrase,

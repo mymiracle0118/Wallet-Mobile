@@ -5,6 +5,7 @@ import { persistReducer } from 'redux-persist';
 import mmkvFlipper from 'rn-mmkv-storage-flipper';
 import { api } from 'services/api';
 
+import app from '../../app.json';
 import addressBook from './addressBook';
 import loader from './loader';
 import popupModelReducer from './popupModelReducer';
@@ -23,7 +24,7 @@ const allReducers = combineReducers({
 });
 
 const storage = new MMKVLoader()
-  .withServiceName('shuttle.data')
+  .withServiceName(`${app.displayName}.data`)
   .withEncryption()
   .initialize();
 if (__DEV__) {

@@ -10,17 +10,22 @@ import { TokenBalanceFormatted } from 'types/applicationInterfaces';
 import EthersService from './EthersService';
 import WalletSigner from './WalletSigner';
 
+// Constants for ERC20 service
 const ERC20_SERVICE_CONSTANTS = {
   WS_PREFIX: 'wss://',
   HTTP_PREFIX: 'https://',
 };
 
+// ERC20 Token Service function
 const Erc20TokenService = () => {
+  // Function to get ERC20 contract
   const getContract = async (
     erc20TokensContractAddress: string,
     item: ExistingNetworksItem,
   ) => {
+    // Sign wallet
     const walletSigner = await WalletSigner().signWallet(item);
+    // Get and initialize contract using EthersService
     return EthersService().getAndInitContract(
       erc20TokensContractAddress,
       Erc20TokenABI,
@@ -28,19 +33,24 @@ const Erc20TokenService = () => {
     );
   };
 
+  // Function to get ERC20 token balance
   const getErc20TokenBalance = async (
     erc20TokensContractAddress: string,
     item: ExistingNetworksItem,
   ): Promise<string> => {
+    // Get wallet address
     const walletAddress = getWalletAddress(
       item?.networkName,
       item?.isEVMNetwork,
     );
 
     try {
+      // Get contract
       const contract = await getContract(erc20TokensContractAddress, item);
+      // Get balance and decimals
       const balance = await contract.balanceOf(walletAddress);
       const decimal = await contract.decimals();
+      // Format token balance
       return formatErc20Token(balance, decimal);
     } catch (error) {
       console.error(
@@ -51,6 +61,7 @@ const Erc20TokenService = () => {
     }
   };
 
+  // Function to fetch ERC20 token balances by network
   const fetchAllErc20TokenBalanceByNetwork = async (
     groupedByNetwork: { [x: string]: any },
     keyName: string,
@@ -58,6 +69,7 @@ const Erc20TokenService = () => {
   ): Promise<TokenBalanceFormatted[]> => {
     return new Promise(async resolve => {
       try {
+        // Initialize variables
         let allTokenBalanceFormattedObjArray: TokenBalanceFormatted[] = [];
         let groupedNetworkValues = groupedByNetwork[keyName];
         let baseURL = groupedNetworkValues[0].providerNetworkRPC_URL.replace(
@@ -65,14 +77,18 @@ const Erc20TokenService = () => {
           ERC20_SERVICE_CONSTANTS.HTTP_PREFIX,
         );
 
+        // Get wallet address
         const address = getWalletAddress(
           groupedNetworkValues[0]?.networkName,
           groupedNetworkValues[0]?.isEVMNetwork,
         );
 
+        // If address doesn't exist, resolve with empty array
         if (!address) {
           resolve([]);
         }
+
+        // Construct request data
         const data = JSON.stringify({
           jsonrpc: '2.0',
           method: 'alchemy_getTokenBalances',
@@ -88,6 +104,7 @@ const Erc20TokenService = () => {
           id: 42,
         });
 
+        // Configure request
         const config = {
           method: 'post',
           url: baseURL,
@@ -97,15 +114,16 @@ const Erc20TokenService = () => {
           data: data,
         };
 
+        // Send request
         let response = await axios(config);
-
         response = response?.data;
-
         const balances = response?.result;
 
+        // Loop through token balances
         for (let token of balances?.tokenBalances) {
           let balance = token.tokenBalance;
 
+          // Fetch token metadata
           const options = {
             method: 'POST',
             url: baseURL,
@@ -126,6 +144,7 @@ const Erc20TokenService = () => {
             balance / Math.pow(10, metadata?.data?.result?.decimals ?? 0);
           balance = balance.toFixed(metadata?.data?.result?.decimals);
 
+          // Push formatted balance to array
           allTokenBalanceFormattedObjArray.push({
             tokenBalance: balance,
             tokenName:
@@ -135,6 +154,7 @@ const Erc20TokenService = () => {
               )?.shortName || '',
           });
 
+          // Resolve if all token balances are fetched
           if (
             allTokenBalanceFormattedObjArray?.length ===
             balances?.tokenBalances?.length
@@ -148,11 +168,13 @@ const Erc20TokenService = () => {
     });
   };
 
+  // Function to fetch all ERC20 token balances
   const fetchAllErc20TokenBalance = (
     item: ExistingNetworksItem[],
   ): Promise<TokenBalanceFormatted[]> => {
     return new Promise(async (resolve, reject) => {
       try {
+        // Initialize variables
         let allTokenBalanceFormattedObjArray: TokenBalanceFormatted[] = [];
         const groupedByNetwork: { [key: string]: ExistingNetworksItem[] } =
           item.reduce(
@@ -170,6 +192,7 @@ const Erc20TokenService = () => {
             {},
           );
 
+        // Iterate over networks and fetch balances
         for (let keyName in groupedByNetwork) {
           const response = await fetchAllErc20TokenBalanceByNetwork(
             groupedByNetwork,
@@ -179,6 +202,7 @@ const Erc20TokenService = () => {
           allTokenBalanceFormattedObjArray =
             allTokenBalanceFormattedObjArray.concat(response);
 
+          // Resolve if balances for all networks are fetched
           if (
             Object.keys(groupedByNetwork)[
               Object.keys(groupedByNetwork).length - 1
@@ -193,6 +217,7 @@ const Erc20TokenService = () => {
     });
   };
 
+  // Return public functions
   return {
     getErc20TokenBalance,
     getContract,
@@ -200,4 +225,5 @@ const Erc20TokenService = () => {
   };
 };
 
+// Export ERC20 Token Service
 export default Erc20TokenService;

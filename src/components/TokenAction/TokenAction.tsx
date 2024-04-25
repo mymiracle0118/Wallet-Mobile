@@ -14,16 +14,12 @@ type Props = {
 };
 
 const TokenAction = ({ text, onPress, iconPath }: Props) => {
-  const { Layout, Fonts, Gutters } = useTheme();
+  const { Layout, Fonts } = useTheme();
 
   return (
-    <Pressable
-      testID="button"
-      onPress={onPress}
-      style={[style(Gutters, Layout).button]}
-    >
+    <Pressable testID="button" onPress={onPress} style={[style(Layout).button]}>
       <Image
-        style={[style(Gutters, Layout).icon]}
+        style={[style(Layout).icon]}
         resizeMode="contain"
         source={iconPath}
       />

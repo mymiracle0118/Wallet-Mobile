@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Keyboard, View } from 'react-native';
-import { openSettings } from 'react-native-permissions';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -16,18 +15,13 @@ import {
 } from 'components/index';
 import useTheme from 'hooks/useTheme';
 import { t } from 'i18next';
-import PermissionService from 'services/PermissionService';
 import WalletAddressValidationService from 'services/WalletAddressValidationService';
 import { storeAddressInBook } from 'store/addressBook';
 import { RootState } from 'store/index';
-import {
-  colorPalette,
-  getRandomIndex,
-  showAlert,
-} from 'theme/Helper/common/Function';
+import { colorPalette, getRandomIndex } from 'theme/Helper/common/Function';
 import {
   ETHSCHEMA,
-  MaximumPasswordCharacters,
+  MaximumUsernameCharacters,
   defaultNetwork,
 } from 'theme/Helper/constant';
 import Variables from 'theme/Variables';
@@ -43,7 +37,7 @@ type FormData = {
 };
 
 const AddAddress: React.FC<any> = () => {
-  const { Common, Gutters, Images, Colors } = useTheme();
+  const { Common, Images, Colors } = useTheme();
 
   const dispatch = useDispatch();
 
@@ -90,49 +84,54 @@ const AddAddress: React.FC<any> = () => {
     callCheckAddress(newAddress);
   };
 
-  // Asynchronous function to handle scanning a QR code
-  const handleScanQrCode = async () => {
-    // Request camera permission using PermissionService
-    const isPermissionGranted =
-      await PermissionService().requestCameraPermission();
+  const openScanQrCode = () => {
+    navigation.navigate(ScreenNames.WalletAddressScanner, {
+      getAddress,
+    });
+  };
 
-    if (isPermissionGranted) {
-      navigation.navigate(ScreenNames.WalletAddressScanner, {
-        getAddress,
-      });
-    } else {
-      showAlert(
-        '',
-        t('common:cameraAccess'),
-        t('common:open_settings'),
-        openSettings,
-        t('common:cancel'),
-      );
-    }
+  const checkAddressIsExist = (address: string) => {
+    const checkAddress = obj => obj.address === address;
+    return !addressBookList.some(checkAddress);
+  };
+
+  const checkLabelNameIsExist = (label: string) => {
+    const checkUserName = obj =>
+      obj.userName.toLowerCase() === label.toLowerCase() &&
+      obj.shortName === selectedNetwork?.id;
+
+    return !addressBookList.some(checkUserName);
   };
 
   // Asynchronous function to save wallet address in address book
   const onSubmit = async (data: FormData) => {
     Keyboard.dismiss();
     if (isAddressValid) {
-      const checkAddress = obj => obj.address === data.address;
-      if (!addressBookList.some(checkAddress)) {
-        let lastElement = addressBookList[addressBookList.length - 1]?.id ?? 0;
-        dispatch(
-          storeAddressInBook({
-            data: {
-              id: lastElement + 1,
-              userName: data.label,
-              address: data.address,
-              networkName: selectedNetwork?.text,
-              shortName: selectedNetwork?.id ?? defaultNetwork,
-              isEVMNetwork:
-                selectedNetwork?.id === defaultNetwork ? true : false,
-              profileIcon: colorPalette[getRandomIndex(colorPalette.length)],
-            },
-          }),
-        );
-        navigation.goBack();
+      if (checkAddressIsExist(data.address)) {
+        if (checkLabelNameIsExist(data.label)) {
+          let lastElement =
+            addressBookList[addressBookList.length - 1]?.id ?? 0;
+          dispatch(
+            storeAddressInBook({
+              data: {
+                id: lastElement + 1,
+                userName: data.label,
+                address: data.address,
+                networkName: selectedNetwork?.text,
+                shortName: selectedNetwork?.id ?? defaultNetwork,
+                isEVMNetwork:
+                  selectedNetwork?.id === defaultNetwork ? true : false,
+                profileIcon: colorPalette[getRandomIndex(colorPalette.length)],
+              },
+            }),
+          );
+          navigation.goBack();
+        } else {
+          setError('label', {
+            type: 'custom',
+            message: 'setting:label_is_already_added',
+          });
+        }
       } else {
         setError('address', {
           type: 'custom',
@@ -151,15 +150,14 @@ const AddAddress: React.FC<any> = () => {
         shouldHideBack={true}
         shouldShowCancel={true}
         title={t('setting:scr_title_add_address')}
-        subTitle={t('setting:add_address_subtile')}
         onBackPress={() => {
           navigation.goBack();
         }}
         rightButtonText={t('common:add')}
         onPressNext={handleSubmit(onSubmit)}
-        isNextDisabled={!isValid}
+        isNextDisabled={!isValid || !isAddressValid || errors?.label?.message}
       />
-      <View style={Gutters.mediumVMargin}>
+      <View>
         <NetworkListDropDownView
           backGroundColor={Colors.blackGray}
           selectedNetwork={selectedNetwork}
@@ -193,7 +191,7 @@ const AddAddress: React.FC<any> = () => {
                     setIsAddressValid(false);
                     reset();
                   } else if (selectedNetwork?.id) {
-                    handleScanQrCode();
+                    openScanQrCode();
                   }
                 }}
                 onChangeValue={prop => {
@@ -233,7 +231,7 @@ const AddAddress: React.FC<any> = () => {
               value={value}
               backGroundColor={Colors.blackGray}
               editable={selectedNetwork?.id ? true : false}
-              maxLength={MaximumPasswordCharacters}
+              maxLength={MaximumUsernameCharacters}
             />
           )}
         />

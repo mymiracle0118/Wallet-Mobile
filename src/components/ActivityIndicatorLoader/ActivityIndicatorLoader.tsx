@@ -6,7 +6,7 @@ import useTheme from 'hooks/useTheme';
 import { style } from './styles';
 
 type Props = {
-  size?: string;
+  size?: 'large' | 'small';
   color?: string;
   loaderStyle?: ViewStyle;
 };
@@ -16,15 +16,16 @@ const ActivityIndicatorLoader = ({ size, color, loaderStyle }: Props) => {
 
   return (
     <ActivityIndicator
+      testID="activity-indicator-loader"
       style={[style(Gutters, Colors).loader, { ...loaderStyle }]}
       color={color ? color : Colors.primary}
-      size={size ? size : 'large'}
+      size={size}
     />
   );
 };
 
 ActivityIndicatorLoader.defaultProps = {
-  size: '',
+  size: 'large',
   color: '',
   loaderStyle: undefined,
 };

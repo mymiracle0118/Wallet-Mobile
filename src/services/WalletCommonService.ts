@@ -57,6 +57,7 @@ const WalletCommonService = () => {
       const tokenInfo = await service.getCustomTokenInformation(
         contractAddress,
         networkObj,
+        true,
       );
 
       // Return the formatted token information
@@ -137,7 +138,7 @@ const WalletCommonService = () => {
     );
   };
 
-  //call this for fetch native balance for ETH and matic native balance in polyGone network
+  //call this for fetch native balance for ETH network
   const fetchAndStoreEthBalance = async (item: ExistingNetworksItem) => {
     let lastBalance = '';
 
@@ -235,9 +236,6 @@ const WalletCommonService = () => {
         allTokenBalances,
       );
     }
-    // allTokenBalances.forEach(obj => {
-    //   StoreUpdateReduxWalletStateService().updateBalanceInStore(obj);
-    // });
   };
 
   const createDefaultWallet = async (
@@ -251,18 +249,28 @@ const WalletCommonService = () => {
     return wallet;
   };
 
-  const getWalletUsingSeed = async (tokenObj: ExistingNetworksItem) => {
+  const getWalletUsingSeed = async (
+    tokenObj: ExistingNetworksItem,
+    pathIndex?: string,
+  ) => {
     resetAllWallet(tokenObj.networkName);
     let wallet = {};
     const service = getServiceByNetworkName(tokenObj.networkName);
+    let derivationPathIndex = '0';
+    if (pathIndex) {
+      derivationPathIndex = pathIndex;
+    } else {
+      derivationPathIndex = getNextDerivationPathIndex(tokenObj.networkName);
+    }
     wallet = await service.getWalletUsingSeed(
       store.getState().wallet.data.seedPhrase,
-      store.getState().userInfo.data.currentUser.derivationPathIndex,
+      derivationPathIndex,
     );
     if (wallet?.address) {
       StoreUpdateReduxWalletStateService().updateWalletAddressInStore(
         wallet.address,
         tokenObj.networkName,
+        derivationPathIndex,
       );
     }
   };
@@ -331,6 +339,48 @@ const WalletCommonService = () => {
     }
   };
 
+  // Asynchronous function to get the derivation path index and check wallet address is exists or not
+  const getDerivationPathIndex = (netWorkType: string) => {
+    const derivationIndex =
+      store.getState().wallet.data.walletAddress[
+        store.getState().userInfo.data.currentUserId
+      ][netWorkType].derivationIndex;
+    return derivationIndex ?? 0;
+  };
+
+  // function to get the derivation path index and check wallet address is exists or not
+  const getNextDerivationPathIndex = (
+    netWorkType: string,
+    derivationIndex: string = '0',
+  ): string => {
+    const tempPathIndex = derivationIndex;
+    const isExist = checkDerivationIndexExists(tempPathIndex, netWorkType);
+    if (isExist) {
+      return getNextDerivationPathIndex(
+        netWorkType,
+        `${Number(tempPathIndex) + 1}`,
+      );
+    } else {
+      return tempPathIndex;
+    }
+  };
+
+  const checkDerivationIndexExists = (
+    derivationIndex: string,
+    netWorkType: string,
+  ) => {
+    const walletAddressList = store.getState().wallet.data.walletAddress;
+    for (const key in walletAddressList) {
+      if (walletAddressList[key].hasOwnProperty(netWorkType)) {
+        const cryptoObj = walletAddressList[key][netWorkType];
+        if (cryptoObj && cryptoObj.derivationIndex === derivationIndex) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
   return {
     createMnemonic,
     sendNativeToken,
@@ -350,6 +400,8 @@ const WalletCommonService = () => {
     getPrivateKeyUsingSeedPhrase,
     createDefaultWallet,
     getServiceByNetworkName,
+    getDerivationPathIndex,
+    getNextDerivationPathIndex,
   };
 };
 

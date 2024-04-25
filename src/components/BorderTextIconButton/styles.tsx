@@ -19,8 +19,8 @@ export const style = (
       ...Layout.rowCenter,
     },
     image: {
-      height: 18,
-      width: 16,
+      height: 20,
+      width: 20,
       ...Gutters.extraTinyRMargin,
     },
     rightImage: {

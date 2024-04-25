@@ -17,6 +17,4 @@ test('render correctly', () => {
     </Provider>
   );
   expect(component.props.children.props.selectedType).toBe(0);
-
-  // render(component);
 });
